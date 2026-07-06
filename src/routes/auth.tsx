@@ -118,10 +118,10 @@ function AuthPage() {
           >
             <div className="flex items-start justify-between">
               <ZolaMark className="h-5 w-5 text-white" />
-              <span className="text-[10px] uppercase tracking-widest text-white/40">Sandbox</span>
+              <span className="text-[10px] uppercase tracking-widest text-white/40">Virtual</span>
             </div>
-            <div className="mt-10 font-mono text-[28px] font-semibold tabular tracking-wider text-white">
-              0123 4567 89
+            <div className="mt-10 font-mono text-[22px] font-semibold tabular tracking-wider text-white">
+              4563 8745 1230 9876
             </div>
             <div className="mt-8 flex items-end justify-between">
               <div className="text-[11px] uppercase tracking-wider text-white/50">Card Holder</div>
