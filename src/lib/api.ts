@@ -156,11 +156,11 @@ export async function setPin(pin: string): Promise<{ success: boolean; message: 
 // ─────────────────────────────────────────────
 
 export async function getBalance() {
-  // Meroe returns amounts in kobo — divide by 100 for naira
+  // API returns amounts in naira directly
   const data = await GET<{ available: number; spendable: number; currency: string }>(
     "/v1/wallet/balance",
   );
-  return { balance: data.available / 100, currency: data.currency as "NGN" };
+  return { balance: data.available, currency: data.currency as "NGN" };
 }
 
 export async function getVirtualAccount(): Promise<VirtualAccount> {
@@ -177,7 +177,7 @@ type RawTxn = {
   reference?: string;
   direction?: string;
   type?: string;
-  amount: number; // kobo from Meroe
+  amount: number; // naira from API
   narration?: string;
   counterparty?: string;
   occurredAt?: string;
@@ -189,7 +189,7 @@ function mapTxn(raw: RawTxn): Transaction {
   return {
     id: raw.transactionId ?? raw.id ?? raw.reference ?? crypto.randomUUID(),
     type: dir === "CREDIT" ? "credit" : "debit",
-    amount: raw.amount / 100, // kobo → naira
+    amount: raw.amount, // already in naira
     counterparty: raw.counterparty ?? raw.reference ?? "—",
     narration: raw.narration ?? "",
     date: raw.occurredAt ?? raw.date ?? new Date().toISOString(),

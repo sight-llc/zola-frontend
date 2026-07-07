@@ -83,7 +83,7 @@ function HomePage() {
             </button>
           </div>
           <span className="rounded border border-white/15 px-2 py-0.5 text-[10px] uppercase tracking-widest text-white/60">
-            Sandbox
+            ZOLA
           </span>
         </div>
         <div className="mt-3 text-4xl font-bold tabular tracking-tight">
