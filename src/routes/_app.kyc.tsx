@@ -20,7 +20,9 @@ function KycPage() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  useEffect(() => { getKycStatus().then(setStatus); }, []);
+  useEffect(() => {
+    getKycStatus().then(setStatus);
+  }, []);
 
   async function onSubmitBvn() {
     setError(null);
@@ -56,7 +58,9 @@ function KycPage() {
     <div className="mx-auto flex max-w-[640px] flex-col gap-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Verification</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Increase your daily limits by completing each tier.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Increase your daily limits by completing each tier.
+        </p>
       </header>
 
       <Card className="flex items-center justify-between">
@@ -72,12 +76,7 @@ function KycPage() {
         </div>
       </Card>
 
-      <TierBlock
-        n={1}
-        title="Basic info"
-        status="complete"
-        limit="₦ 50,000 daily"
-      >
+      <TierBlock n={1} title="Basic info" status="complete" limit="₦ 50,000 daily">
         <div className="grid grid-cols-2 gap-4 text-sm">
           <FieldReadonly label="Full name" value={user?.name ?? "—"} />
           <FieldReadonly label="Email" value={user?.email ?? "—"} />
@@ -104,9 +103,12 @@ function KycPage() {
               error={error ?? undefined}
             />
             <p className="text-xs text-muted-foreground">
-              Your BVN is encrypted and never stored in plain text. Used for identity verification only.
+              Your BVN is encrypted and never stored in plain text. Used for identity verification
+              only.
             </p>
-            <Button loading={submitting} disabled={bvn.length !== 11} onClick={onSubmitBvn}>Verify BVN</Button>
+            <Button loading={submitting} disabled={bvn.length !== 11} onClick={onSubmitBvn}>
+              Verify BVN
+            </Button>
           </div>
         )}
       </TierBlock>
@@ -118,7 +120,9 @@ function KycPage() {
         limit="₦ 5,000,000 daily"
       >
         {status?.idVerified ? (
-          <div className="text-sm text-muted-foreground">Your ID is under review. This unlocks Tier 3 limits.</div>
+          <div className="text-sm text-muted-foreground">
+            Your ID is under review. This unlocks Tier 3 limits.
+          </div>
         ) : (
           <div className="flex flex-col gap-3">
             <p className="text-sm text-muted-foreground">
@@ -131,15 +135,27 @@ function KycPage() {
               onChange={(e) => setIdFile(e.target.files?.[0] ?? null)}
             />
             <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={!status?.bvnVerified}>
+              <Button
+                variant="outline"
+                onClick={() => fileRef.current?.click()}
+                disabled={!status?.bvnVerified}
+              >
                 Choose file
               </Button>
-              <span className="truncate text-xs text-muted-foreground">{idFile?.name ?? "No file selected"}</span>
+              <span className="truncate text-xs text-muted-foreground">
+                {idFile?.name ?? "No file selected"}
+              </span>
             </div>
-            <Button loading={idSubmitting} disabled={!idFile || !status?.bvnVerified} onClick={onSubmitId}>
+            <Button
+              loading={idSubmitting}
+              disabled={!idFile || !status?.bvnVerified}
+              onClick={onSubmitId}
+            >
               Submit for review
             </Button>
-            {!status?.bvnVerified ? <p className="text-xs text-muted-foreground">Complete Tier 2 first.</p> : null}
+            {!status?.bvnVerified ? (
+              <p className="text-xs text-muted-foreground">Complete Tier 2 first.</p>
+            ) : null}
           </div>
         )}
       </TierBlock>
@@ -147,8 +163,18 @@ function KycPage() {
   );
 }
 
-function TierBlock({ n, title, status, limit, children }: {
-  n: number; title: string; status: "complete" | "pending" | "locked"; limit: string; children: React.ReactNode;
+function TierBlock({
+  n,
+  title,
+  status,
+  limit,
+  children,
+}: {
+  n: number;
+  title: string;
+  status: "complete" | "pending" | "locked";
+  limit: string;
+  children: React.ReactNode;
 }) {
   const badge = status === "complete" ? "Complete" : status === "pending" ? "Pending" : "Locked";
   return (
@@ -156,12 +182,18 @@ function TierBlock({ n, title, status, limit, children }: {
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border text-[11px] font-semibold tabular text-foreground">{n}</span>
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border text-[11px] font-semibold tabular text-foreground">
+              {n}
+            </span>
             <h3 className="text-sm font-semibold text-foreground">{title}</h3>
           </div>
           <div className="mt-1 pl-8 text-xs text-muted-foreground">Unlocks {limit}</div>
         </div>
-        <span className={`text-[10px] uppercase tracking-widest ${status === "complete" ? "text-foreground" : "text-muted-foreground"}`}>{badge}</span>
+        <span
+          className={`text-[10px] uppercase tracking-widest ${status === "complete" ? "text-foreground" : "text-muted-foreground"}`}
+        >
+          {badge}
+        </span>
       </div>
       <div className="mt-5 pl-8">{children}</div>
     </Card>

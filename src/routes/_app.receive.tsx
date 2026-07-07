@@ -13,7 +13,9 @@ function ReceivePage() {
   const [acct, setAcct] = useState<VirtualAccount | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => { getVirtualAccount().then(setAcct); }, []);
+  useEffect(() => {
+    getVirtualAccount().then(setAcct);
+  }, []);
 
   function copy(text: string, label: string) {
     navigator.clipboard.writeText(text);
@@ -24,7 +26,9 @@ function ReceivePage() {
     if (!acct) return;
     const str = `Bank: ${acct.bankName} | Account: ${acct.accountNumber} | Name: ${acct.accountName} | Ref: Zola`;
     if (navigator.share) {
-      navigator.share({ title: "My Zola account", text: str }).catch(() => copy(str, "Account details"));
+      navigator
+        .share({ title: "My Zola account", text: str })
+        .catch(() => copy(str, "Account details"));
     } else {
       copy(str, "Account details");
     }
@@ -63,17 +67,37 @@ function ReceivePage() {
         />
       </div>
 
-      <Button size="lg" onClick={share}>Share details</Button>
+      <Button size="lg" onClick={share}>
+        Share details
+      </Button>
     </div>
   );
 }
 
-function FieldRow({ label, value, mono, onCopy, last }: { label: string; value: string; mono?: boolean; onCopy: () => void; last?: boolean }) {
+function FieldRow({
+  label,
+  value,
+  mono,
+  onCopy,
+  last,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  onCopy: () => void;
+  last?: boolean;
+}) {
   return (
-    <div className={`flex items-center justify-between gap-4 py-4 ${last ? "" : "border-b border-white/10"} mt-2`}>
+    <div
+      className={`flex items-center justify-between gap-4 py-4 ${last ? "" : "border-b border-white/10"} mt-2`}
+    >
       <div>
         <div className="text-[11px] uppercase tracking-wider text-white/50">{label}</div>
-        <div className={`mt-1 ${mono ? "font-mono text-xl tabular tracking-wider" : "text-base font-medium"} text-white`}>{value}</div>
+        <div
+          className={`mt-1 ${mono ? "font-mono text-xl tabular tracking-wider" : "text-base font-medium"} text-white`}
+        >
+          {value}
+        </div>
       </div>
       <button
         onClick={onCopy}

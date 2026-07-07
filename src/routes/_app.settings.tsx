@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button, Card, Input } from "@/components/ui-kit";
-import { getKycStatus, type KycStatus } from "@/lib/api";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { getKycStatus, setPin, type KycStatus } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/lib/toast";
 
@@ -13,10 +14,13 @@ function SettingsPage() {
   const { user, signOut } = useAuth();
   const [kyc, setKyc] = useState<KycStatus | null>(null);
   const [pwOpen, setPwOpen] = useState(false);
+  const [pinOpen, setPinOpen] = useState(false);
   const [theme, setTheme] = useState<"system" | "light" | "dark">("system");
   const nav = useNavigate();
 
-  useEffect(() => { getKycStatus().then(setKyc); }, []);
+  useEffect(() => {
+    getKycStatus().then(setKyc);
+  }, []);
 
   useEffect(() => {
     const saved = (localStorage.getItem("zola.theme") as "light" | "dark" | null) ?? "system";
@@ -57,8 +61,31 @@ function SettingsPage() {
             <div className="text-sm font-medium text-foreground">Password</div>
             <div className="mt-0.5 text-xs text-muted-foreground">Last changed —</div>
           </div>
-          <Button variant="outline" onClick={() => setPwOpen(true)}>Change password</Button>
+          <Button variant="outline" onClick={() => setPwOpen(true)}>
+            Change password
+          </Button>
         </Card>
+        {user?.pin_set ? (
+          <Card className="mt-2 flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-foreground">Transaction PIN</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                Set up for secure transfers
+              </div>
+            </div>
+            <div className="text-xs text-green-600">✓ Set</div>
+          </Card>
+        ) : (
+          <Card className="mt-2 flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-foreground">Transaction PIN</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">Required for transfers</div>
+            </div>
+            <Button variant="outline" onClick={() => setPinOpen(true)}>
+              Set PIN
+            </Button>
+          </Card>
+        )}
       </Section>
 
       <Section title="Verification">
@@ -67,7 +94,12 @@ function SettingsPage() {
             <div className="text-sm font-medium text-foreground">Identity tier</div>
             <div className="mt-0.5 text-xs text-muted-foreground">Tier {kyc?.tier ?? "—"} of 3</div>
           </div>
-          <Link to="/kyc" className="rounded-md border border-border bg-background px-3 h-10 inline-flex items-center text-sm font-medium hover:bg-surface transition-colors">Manage</Link>
+          <Link
+            to="/kyc"
+            className="rounded-md border border-border bg-background px-3 h-10 inline-flex items-center text-sm font-medium hover:bg-surface transition-colors"
+          >
+            Manage
+          </Link>
         </Card>
       </Section>
 
@@ -90,7 +122,10 @@ function SettingsPage() {
       <Section title="Danger zone">
         <Card>
           <button
-            onClick={() => { signOut(); nav({ to: "/auth" }); }}
+            onClick={() => {
+              signOut();
+              nav({ to: "/auth" });
+            }}
             className="text-sm font-medium text-danger hover:underline underline-offset-2"
           >
             Sign out
@@ -99,6 +134,7 @@ function SettingsPage() {
       </Section>
 
       {pwOpen ? <PasswordModal onClose={() => setPwOpen(false)} /> : null}
+      {pinOpen ? <PinModal onClose={() => setPinOpen(false)} /> : null}
     </div>
   );
 }
@@ -106,7 +142,9 @@ function SettingsPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <div className="mb-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">{title}</div>
+      <div className="mb-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+        {title}
+      </div>
       {children}
     </section>
   );
@@ -128,25 +166,115 @@ function PasswordModal({ onClose }: { onClose: () => void }) {
   const { toast } = useToast();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-xl border border-border bg-background p-6">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-xl border border-border bg-background p-6"
+      >
         <h3 className="text-base font-semibold">Change password</h3>
-        <p className="mt-1 text-xs text-muted-foreground">Enter your current password and choose a new one.</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Enter your current password and choose a new one.
+        </p>
         <div className="mt-5 flex flex-col gap-3">
-          <Input label="Current password" type="password" value={cur} onChange={(e) => setCur(e.target.value)} />
-          <Input label="New password" type="password" value={next} onChange={(e) => setNext(e.target.value)} />
+          <Input
+            label="Current password"
+            type="password"
+            value={cur}
+            onChange={(e) => setCur(e.target.value)}
+          />
+          <Input
+            label="New password"
+            type="password"
+            value={next}
+            onChange={(e) => setNext(e.target.value)}
+          />
         </div>
         <div className="mt-6 flex justify-end gap-2">
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
           <Button
             loading={loading}
             disabled={!cur || next.length < 8}
             onClick={() => {
               setLoading(true);
-              setTimeout(() => { setLoading(false); toast("Password updated"); onClose(); }, 700);
+              setTimeout(() => {
+                setLoading(false);
+                toast("Password updated");
+                onClose();
+              }, 700);
             }}
           >
             Update password
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PinModal({ onClose }: { onClose: () => void }) {
+  const [pin, setPinInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  async function handleSetPin() {
+    if (pin.length !== 4) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await setPin(pin);
+      toast("Transaction PIN set successfully");
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to set PIN");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-xl border border-border bg-background p-6"
+      >
+        <h3 className="text-base font-semibold">Set Transaction PIN</h3>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Create a 4-digit PIN for secure transfers.
+        </p>
+        <div className="mt-5 flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-muted-foreground">4-digit PIN</label>
+            <InputOTP
+              maxLength={4}
+              value={pin}
+              onChange={setPinInput}
+              className="flex items-center gap-2"
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+        </div>
+        {error ? <div className="mt-2 text-xs text-danger">{error}</div> : null}
+        <div className="mt-6 flex justify-end gap-2">
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button loading={loading} disabled={pin.length !== 4} onClick={handleSetPin}>
+            Set PIN
           </Button>
         </div>
       </div>

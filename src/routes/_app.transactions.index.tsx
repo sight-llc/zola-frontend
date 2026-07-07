@@ -15,7 +15,9 @@ function TxnPage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
 
-  useEffect(() => { getTransactions().then(setTxns); }, []);
+  useEffect(() => {
+    getTransactions().then(setTxns);
+  }, []);
 
   const filtered = useMemo(() => {
     if (!txns) return null;
@@ -24,7 +26,8 @@ function TxnPage() {
       if (filter === "out" && t.type !== "debit") return false;
       if (q) {
         const s = q.toLowerCase();
-        if (!t.counterparty.toLowerCase().includes(s) && !t.narration.toLowerCase().includes(s)) return false;
+        if (!t.counterparty.toLowerCase().includes(s) && !t.narration.toLowerCase().includes(s))
+          return false;
       }
       return true;
     });
@@ -46,7 +49,9 @@ function TxnPage() {
     <div className="flex flex-col gap-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Transactions</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Every transfer in and out of your Zola wallet.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Every transfer in and out of your Zola wallet.
+        </p>
       </header>
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -62,7 +67,11 @@ function TxnPage() {
           ))}
         </div>
         <div className="md:w-72">
-          <Input placeholder="Search by name or narration" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input
+            placeholder="Search by name or narration"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
         </div>
       </div>
 
@@ -76,7 +85,9 @@ function TxnPage() {
         ) : (
           grouped.map(([label, items]) => (
             <section key={label}>
-              <div className="mb-1 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">{label}</div>
+              <div className="mb-1 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                {label}
+              </div>
               <div className="flex flex-col">
                 {items.map((t, i) => (
                   <div key={t.id}>
@@ -96,7 +107,8 @@ function TxnPage() {
 function groupKey(iso: string) {
   const d = new Date(iso);
   const today = new Date();
-  const yest = new Date(); yest.setDate(today.getDate() - 1);
+  const yest = new Date();
+  yest.setDate(today.getDate() - 1);
   const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
   if (sameDay(d, today)) return "Today";
   if (sameDay(d, yest)) return "Yesterday";

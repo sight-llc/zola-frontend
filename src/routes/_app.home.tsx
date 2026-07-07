@@ -1,6 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { getBalance, getKycStatus, getTransactions, getVirtualAccount, formatNaira, type Transaction, type KycStatus, type VirtualAccount } from "@/lib/api";
+import {
+  getBalance,
+  getKycStatus,
+  getTransactions,
+  getVirtualAccount,
+  formatNaira,
+  type Transaction,
+  type KycStatus,
+  type VirtualAccount,
+} from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/lib/toast";
 import { Card } from "@/components/ui-kit";
@@ -39,17 +48,24 @@ function HomePage() {
   function toggleBalance() {
     setBalanceHidden((prev) => {
       const next = !prev;
-      if (typeof window !== "undefined") localStorage.setItem("zola.balanceHidden", next ? "1" : "0");
+      if (typeof window !== "undefined")
+        localStorage.setItem("zola.balanceHidden", next ? "1" : "0");
       return next;
     });
   }
 
-  const today = new Date().toLocaleDateString("en-NG", { weekday: "long", month: "long", day: "numeric" });
+  const today = new Date().toLocaleDateString("en-NG", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{greeting()}, {user?.name.split(" ")[0]}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {greeting()}, {user?.name.split(" ")[0]}
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">{today}</p>
       </header>
 
@@ -66,7 +82,9 @@ function HomePage() {
               {balanceHidden ? <EyeOffIcon /> : <EyeIcon />}
             </button>
           </div>
-          <span className="rounded border border-white/15 px-2 py-0.5 text-[10px] uppercase tracking-widest text-white/60">Sandbox</span>
+          <span className="rounded border border-white/15 px-2 py-0.5 text-[10px] uppercase tracking-widest text-white/60">
+            Sandbox
+          </span>
         </div>
         <div className="mt-3 text-4xl font-bold tabular tracking-tight">
           {balance == null ? (
@@ -83,7 +101,10 @@ function HomePage() {
             <span className="text-white/40">·</span>
             <span>{account.bankName}</span>
             <button
-              onClick={() => { navigator.clipboard.writeText(account.accountNumber); toast("Account number copied"); }}
+              onClick={() => {
+                navigator.clipboard.writeText(account.accountNumber);
+                toast("Account number copied");
+              }}
               aria-label="Copy account number"
               className="ml-auto rounded-md border border-white/15 p-1.5 text-white/70 hover:bg-white/5 hover:text-white transition-colors"
             >
@@ -95,7 +116,10 @@ function HomePage() {
 
       {/* KYC banner */}
       {kyc && kyc.tier < 2 ? (
-        <Link to="/kyc" className="group flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-3 text-sm hover:bg-background transition-colors">
+        <Link
+          to="/kyc"
+          className="group flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-3 text-sm hover:bg-background transition-colors"
+        >
           <span className="text-foreground">Verify your identity to unlock higher limits</span>
           <span className="text-muted-foreground group-hover:text-foreground">→</span>
         </Link>
@@ -113,13 +137,20 @@ function HomePage() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-semibold tracking-tight">Recent transactions</h2>
-          <Link to="/transactions" className="text-xs font-medium text-muted-foreground hover:text-foreground">View all</Link>
+          <Link
+            to="/transactions"
+            className="text-xs font-medium text-muted-foreground hover:text-foreground"
+          >
+            View all
+          </Link>
         </div>
         <div className="flex flex-col">
           {txns == null ? (
             Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
           ) : txns.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">No transactions yet</div>
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              No transactions yet
+            </div>
           ) : (
             txns.map((t, i) => (
               <div key={t.id}>
@@ -134,9 +165,20 @@ function HomePage() {
   );
 }
 
-function QuickAction({ to, label, icon, onClickCopy }: { to: string; label: string; icon: React.ReactNode; onClickCopy?: boolean }) {
+function QuickAction({
+  to,
+  label,
+  icon,
+  onClickCopy,
+}: {
+  to: string;
+  label: string;
+  icon: React.ReactNode;
+  onClickCopy?: boolean;
+}) {
   const { toast } = useToast();
-  const cls = "flex flex-col items-start gap-3 rounded-lg border border-border bg-background p-4 text-left transition-colors hover:bg-surface";
+  const cls =
+    "flex flex-col items-start gap-3 rounded-lg border border-border bg-background p-4 text-left transition-colors hover:bg-surface";
   const content = (
     <>
       <span className="rounded-md border border-border p-1.5 text-foreground">{icon}</span>
@@ -145,10 +187,22 @@ function QuickAction({ to, label, icon, onClickCopy }: { to: string; label: stri
   );
   if (onClickCopy) {
     return (
-      <button className={cls} onClick={() => { navigator.clipboard.writeText("Join me on Zola: https://zola.app"); toast("Invite link copied"); }}>{content}</button>
+      <button
+        className={cls}
+        onClick={() => {
+          navigator.clipboard.writeText("Join me on Zola: https://zola.app");
+          toast("Invite link copied");
+        }}
+      >
+        {content}
+      </button>
     );
   }
-  return <Link to={to} className={cls}>{content}</Link>;
+  return (
+    <Link to={to} className={cls}>
+      {content}
+    </Link>
+  );
 }
 
 export function TxnRow({ t }: { t: Transaction }) {
@@ -160,7 +214,11 @@ export function TxnRow({ t }: { t: Transaction }) {
       className="flex items-center gap-4 py-3.5 rounded-md transition-colors hover:bg-surface -mx-2 px-2"
     >
       <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface text-xs font-semibold text-foreground">
-        {t.counterparty.split(" ").map((w) => w[0]).slice(0, 2).join("")}
+        {t.counterparty
+          .split(" ")
+          .map((w) => w[0])
+          .slice(0, 2)
+          .join("")}
       </div>
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-medium text-foreground">{t.counterparty}</div>
@@ -203,7 +261,15 @@ function SkeletonRow() {
 
 function CopyIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <rect x="9" y="9" width="11" height="11" rx="2" />
       <path d="M5 15V5a2 2 0 0 1 2-2h10" />
     </svg>
@@ -211,28 +277,59 @@ function CopyIcon() {
 }
 function ArrowIcon({ rotate = 0 }: { rotate?: number }) {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ transform: `rotate(${rotate}deg)` }}>
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: `rotate(${rotate}deg)` }}
+    >
       <path d="M5 12h14M13 5l7 7-7 7" />
     </svg>
   );
 }
 function ListSmall() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+    >
       <path d="M4 6h16M4 12h16M4 18h16" />
     </svg>
   );
 }
 function PlusSmall() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+    >
       <path d="M12 5v14M5 12h14" />
     </svg>
   );
 }
 function EyeIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
@@ -240,7 +337,15 @@ function EyeIcon() {
 }
 function EyeOffIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-6.5 0-10-7-10-7a19.6 19.6 0 0 1 4.22-5.06M9.9 4.24A10.94 10.94 0 0 1 12 4c6.5 0 10 7 10 7a19.62 19.62 0 0 1-3.17 4.19M1 1l22 22" />
       <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
     </svg>

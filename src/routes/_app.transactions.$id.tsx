@@ -15,13 +15,17 @@ export const Route = createFileRoute("/_app/transactions/$id")({
   notFoundComponent: () => (
     <div className="mx-auto flex max-w-[520px] flex-col gap-4">
       <div className="text-sm text-muted-foreground">Transaction not found.</div>
-      <Link to="/transactions" className="text-sm font-medium underline underline-offset-2">Back to transactions</Link>
+      <Link to="/transactions" className="text-sm font-medium underline underline-offset-2">
+        Back to transactions
+      </Link>
     </div>
   ),
   errorComponent: () => (
     <div className="mx-auto flex max-w-[520px] flex-col gap-4">
       <div className="text-sm text-danger">Something went wrong loading this transaction.</div>
-      <Link to="/transactions" className="text-sm font-medium underline underline-offset-2">Back to transactions</Link>
+      <Link to="/transactions" className="text-sm font-medium underline underline-offset-2">
+        Back to transactions
+      </Link>
     </div>
   ),
 });
@@ -34,8 +38,12 @@ function TxnDetailsPage() {
 
   useEffect(() => {
     let cancelled = false;
-    getTransaction(id).then((t) => { if (!cancelled) setTxn(t); });
-    return () => { cancelled = true; };
+    getTransaction(id).then((t) => {
+      if (!cancelled) setTxn(t);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   if (txn === undefined) {
@@ -51,15 +59,21 @@ function TxnDetailsPage() {
     return (
       <div className="mx-auto flex max-w-[520px] flex-col gap-4">
         <div className="text-sm text-muted-foreground">Transaction not found.</div>
-        <Link to="/transactions" className="text-sm font-medium underline underline-offset-2">Back to transactions</Link>
+        <Link to="/transactions" className="text-sm font-medium underline underline-offset-2">
+          Back to transactions
+        </Link>
       </div>
     );
   }
 
   const credit = txn.type === "credit";
   const dateStr = new Date(txn.date).toLocaleString("en-NG", {
-    weekday: "short", month: "short", day: "numeric", year: "numeric",
-    hour: "2-digit", minute: "2-digit",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   return (
@@ -68,13 +82,27 @@ function TxnDetailsPage() {
         onClick={() => router.history.back()}
         className="inline-flex items-center gap-1.5 self-start text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
       >
-        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+        <svg
+          viewBox="0 0 24 24"
+          className="h-3.5 w-3.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
         Back
       </button>
 
       <header className="flex flex-col items-center gap-3 pt-2">
         <div className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-surface text-sm font-semibold text-foreground">
-          {txn.counterparty.split(" ").map((w) => w[0]).slice(0, 2).join("")}
+          {txn.counterparty
+            .split(" ")
+            .map((w) => w[0])
+            .slice(0, 2)
+            .join("")}
         </div>
         <div className="text-center">
           <div className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -121,11 +149,22 @@ function TxnDetailsPage() {
           <dd className="col-span-2 flex items-center gap-2">
             <span className="tabular text-foreground truncate">{txn.id}</span>
             <button
-              onClick={() => { navigator.clipboard.writeText(txn.id); toast("Reference copied"); }}
+              onClick={() => {
+                navigator.clipboard.writeText(txn.id);
+                toast("Reference copied");
+              }}
               aria-label="Copy reference"
               className="rounded-md border border-border p-1 text-muted-foreground hover:bg-surface hover:text-foreground transition-colors"
             >
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3.5 w-3.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <rect x="9" y="9" width="11" height="11" rx="2" />
                 <path d="M5 15V5a2 2 0 0 1 2-2h10" />
               </svg>

@@ -21,6 +21,7 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const { setUser, user, ready } = useAuth();
@@ -38,9 +39,16 @@ function AuthPage() {
       setError("Please fill in all fields.");
       return;
     }
+    if (mode === "register" && phone && !/^\+?\d{7,15}$/.test(phone.replace(/[\s\-]/g, ""))) {
+      setError("Please enter a valid phone number.");
+      return;
+    }
     setLoading(true);
     try {
-      const res = mode === "login" ? await login(email, password) : await register(name, email, password);
+      const res =
+        mode === "login"
+          ? await login(email, password)
+          : await register(name, email, password, phone || undefined);
       setUser(res.user);
       toast(mode === "login" ? "Welcome back" : "Account created");
       nav({ to: "/home", replace: true });
@@ -62,15 +70,51 @@ function AuthPage() {
             {mode === "login" ? "Sign in to Zola" : "Create your account"}
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            {mode === "login" ? "Access your Nigerian wallet." : "Get your dedicated NUBAN in minutes."}
+            {mode === "login"
+              ? "Access your Nigerian wallet."
+              : "Get your dedicated NUBAN in minutes."}
           </p>
 
           <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-4">
             {mode === "register" ? (
-              <Input label="Full name" name="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Chisom Okafor" autoComplete="name" />
+              <>
+                <Input
+                  label="Full name"
+                  name="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Chisom Okafor"
+                  autoComplete="name"
+                />
+                <Input
+                  label="Phone number"
+                  name="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="080 1234 5678"
+                  autoComplete="tel"
+                />
+              </>
             ) : null}
-            <Input label="Email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" autoComplete="email" />
-            <Input label="Password" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete={mode === "login" ? "current-password" : "new-password"} />
+            <Input
+              label="Email"
+              name="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@company.com"
+              autoComplete="email"
+            />
+            <Input
+              label="Password"
+              name="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+            />
 
             {error ? <div className="text-xs text-danger">{error}</div> : null}
 
@@ -82,7 +126,10 @@ function AuthPage() {
           <div className="mt-6 text-xs text-muted-foreground">
             {mode === "login" ? "Don't have an account? " : "Already have an account? "}
             <button
-              onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(null); }}
+              onClick={() => {
+                setMode(mode === "login" ? "register" : "login");
+                setError(null);
+              }}
               className="font-medium text-foreground underline underline-offset-2"
             >
               {mode === "login" ? "Create one" : "Sign in"}
@@ -90,19 +137,35 @@ function AuthPage() {
           </div>
         </div>
 
-        <div className="text-xs text-muted-foreground">© 2026 Zola. Built on Meroe infrastructure.</div>
+        <div className="text-xs text-muted-foreground">
+          © 2026 Zola. Built on Meroe infrastructure.
+        </div>
       </div>
 
       {/* RIGHT — brand canvas */}
       <div className="relative hidden overflow-hidden bg-[#0A0A0A] lg:block">
         {/* Global currency symbols — the only multi-currency surface in the app */}
-        <span className="pointer-events-none absolute top-[8%] left-[12%] text-[180px] font-bold text-white/[0.06] select-none">₦</span>
-        <span className="pointer-events-none absolute top-[18%] right-[10%] text-[90px] font-semibold text-white/[0.10] select-none">$</span>
-        <span className="pointer-events-none absolute bottom-[14%] left-[18%] text-[120px] font-bold text-white/[0.08] select-none">€</span>
-        <span className="pointer-events-none absolute bottom-[22%] right-[16%] text-[60px] font-semibold text-white/[0.15] select-none">£</span>
-        <span className="pointer-events-none absolute top-[46%] left-[6%] text-[40px] font-medium text-white/[0.10] select-none">¥</span>
-        <span className="pointer-events-none absolute top-[54%] right-[4%] text-[52px] font-medium text-white/[0.08] select-none">₹</span>
-        <span className="pointer-events-none absolute top-[32%] left-[42%] text-[70px] font-semibold text-white/[0.07] select-none">₿</span>
+        <span className="pointer-events-none absolute top-[8%] left-[12%] text-[180px] font-bold text-white/[0.06] select-none">
+          ₦
+        </span>
+        <span className="pointer-events-none absolute top-[18%] right-[10%] text-[90px] font-semibold text-white/[0.10] select-none">
+          $
+        </span>
+        <span className="pointer-events-none absolute bottom-[14%] left-[18%] text-[120px] font-bold text-white/[0.08] select-none">
+          €
+        </span>
+        <span className="pointer-events-none absolute bottom-[22%] right-[16%] text-[60px] font-semibold text-white/[0.15] select-none">
+          £
+        </span>
+        <span className="pointer-events-none absolute top-[46%] left-[6%] text-[40px] font-medium text-white/[0.10] select-none">
+          ¥
+        </span>
+        <span className="pointer-events-none absolute top-[54%] right-[4%] text-[52px] font-medium text-white/[0.08] select-none">
+          ₹
+        </span>
+        <span className="pointer-events-none absolute top-[32%] left-[42%] text-[70px] font-semibold text-white/[0.07] select-none">
+          ₿
+        </span>
 
         <div className="relative z-10 flex h-full w-full flex-col items-center justify-center px-10">
           <p className="mb-10 text-[28px] font-semibold leading-tight text-white text-center">

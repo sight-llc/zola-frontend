@@ -16,16 +16,17 @@ export type User = {
   email: string;
   phone?: string | null;
   meroe_customer_id?: string | null;
+  pin_set?: boolean;
 };
 
 export type Transaction = {
   id: string;
   type: "credit" | "debit";
-  amount: number;       // naira
+  amount: number; // naira
   counterparty: string;
   narration: string;
   bank?: string;
-  date: string;         // ISO
+  date: string; // ISO
 };
 
 export type KycStatus = {
@@ -46,7 +47,7 @@ export type VirtualAccount = {
 // ─────────────────────────────────────────────
 
 const TOKEN_KEY = "zola.token";
-const USER_KEY  = "zola.user";
+const USER_KEY = "zola.user";
 
 export function getToken(): string | null {
   return typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
@@ -100,18 +101,32 @@ async function req<T>(method: string, path: string, body?: unknown, auth = true)
   return res.json();
 }
 
-const GET  = <T>(path: string)                   => req<T>("GET",  path);
+const GET = <T>(path: string) => req<T>("GET", path);
 const POST = <T>(path: string, body: unknown, auth = true) => req<T>("POST", path, body, auth);
 
 // ─────────────────────────────────────────────
 // Auth
 // ─────────────────────────────────────────────
 
-type RawUser = { id: string; full_name: string; email: string; phone?: string | null; meroe_customer_id?: string | null };
+type RawUser = {
+  id: string;
+  full_name: string;
+  email: string;
+  phone?: string | null;
+  meroe_customer_id?: string | null;
+  pin_set?: boolean;
+};
 type AuthPayload = { access_token: string; user: RawUser };
 
 function mapUser(raw: RawUser): User {
-  return { id: raw.id, name: raw.full_name, email: raw.email, phone: raw.phone, meroe_customer_id: raw.meroe_customer_id };
+  return {
+    id: raw.id,
+    name: raw.full_name,
+    email: raw.email,
+    phone: raw.phone,
+    meroe_customer_id: raw.meroe_customer_id,
+    pin_set: raw.pin_set,
+  };
 }
 
 export async function login(email: string, password: string) {
@@ -121,11 +136,19 @@ export async function login(email: string, password: string) {
   return { user, token: data.access_token };
 }
 
-export async function register(name: string, email: string, password: string) {
-  const data = await POST<AuthPayload>("/v1/auth/register", { full_name: name, email, password }, false);
+export async function register(name: string, email: string, password: string, phone?: string) {
+  const data = await POST<AuthPayload>(
+    "/v1/auth/register",
+    { full_name: name, email, password, phone },
+    false,
+  );
   const user = mapUser(data.user);
   saveSession(data.access_token, user);
   return { user, token: data.access_token };
+}
+
+export async function setPin(pin: string): Promise<{ success: boolean; message: string }> {
+  return POST<{ success: boolean; message: string }>("/v1/auth/pin", { pin });
 }
 
 // ─────────────────────────────────────────────
@@ -134,7 +157,9 @@ export async function register(name: string, email: string, password: string) {
 
 export async function getBalance() {
   // Meroe returns amounts in kobo — divide by 100 for naira
-  const data = await GET<{ available: number; spendable: number; currency: string }>("/v1/wallet/balance");
+  const data = await GET<{ available: number; spendable: number; currency: string }>(
+    "/v1/wallet/balance",
+  );
   return { balance: data.available / 100, currency: data.currency as "NGN" };
 }
 
@@ -152,7 +177,7 @@ type RawTxn = {
   reference?: string;
   direction?: string;
   type?: string;
-  amount: number;     // kobo from Meroe
+  amount: number; // kobo from Meroe
   narration?: string;
   counterparty?: string;
   occurredAt?: string;
@@ -162,12 +187,12 @@ type RawTxn = {
 function mapTxn(raw: RawTxn): Transaction {
   const dir = (raw.direction ?? raw.type ?? "").toUpperCase();
   return {
-    id:           raw.transactionId ?? raw.id ?? raw.reference ?? crypto.randomUUID(),
-    type:         dir === "CREDIT" ? "credit" : "debit",
-    amount:       raw.amount / 100,   // kobo → naira
+    id: raw.transactionId ?? raw.id ?? raw.reference ?? crypto.randomUUID(),
+    type: dir === "CREDIT" ? "credit" : "debit",
+    amount: raw.amount / 100, // kobo → naira
     counterparty: raw.counterparty ?? raw.reference ?? "—",
-    narration:    raw.narration ?? "",
-    date:         raw.occurredAt ?? raw.date ?? new Date().toISOString(),
+    narration: raw.narration ?? "",
+    date: raw.occurredAt ?? raw.date ?? new Date().toISOString(),
   };
 }
 
@@ -191,53 +216,57 @@ export async function getTransaction(id: string): Promise<Transaction | null> {
 // Transfers
 // ─────────────────────────────────────────────
 
-export const NG_BANKS = [
-  { code: "058",    name: "GTBank" },
-  { code: "011",    name: "First Bank" },
-  { code: "044",    name: "Access Bank" },
-  { code: "057",    name: "Zenith Bank" },
-  { code: "033",    name: "UBA" },
-  { code: "50211",  name: "Kuda" },
-  { code: "999992", name: "Opay" },
-  { code: "50515",  name: "Moniepoint" },
-  { code: "232",    name: "Sterling Bank" },
-  { code: "035",    name: "Wema Bank" },
-  { code: "070",    name: "Fidelity Bank" },
-  { code: "214",    name: "FCMB" },
-  { code: "032",    name: "Union Bank" },
-  { code: "221",    name: "Stanbic IBTC" },
-];
+export type BankInfo = {
+  bankCode: string;
+  bankName: string;
+  nipCode?: string | null;
+  logo?: string | null;
+};
+
+// Fetch banks from API - no fallback, must succeed
+export async function getBanks(): Promise<BankInfo[]> {
+  return GET<BankInfo[]>("/v1/transfers/banks");
+}
 
 export async function resolveAccount(bankCode: string, accountNumber: string) {
-  const data = await POST<{ accountName: string; bankName: string }>(
-    "/v1/transfers/resolve",
-    { bank_code: bankCode, account_number: accountNumber },
-  );
-  return { accountName: data.accountName, bankName: data.bankName };
+  // New response format: { accountNumber, accountName }
+  const data = await POST<{ accountNumber: string; accountName: string }>("/v1/transfers/resolve", {
+    bank_code: bankCode,
+    account_number: accountNumber,
+  });
+  // Get bank name from the banks list - no fallback, must succeed
+  const banks = await getBanks();
+  const bank = banks.find((b) => b.bankCode === bankCode);
+  return {
+    accountName: data.accountName,
+    bankName: bank?.bankName ?? "Unknown Bank",
+  };
 }
 
 export async function sendMoney(
   bankCode: string,
   accountNumber: string,
-  accountName: string,   // resolved name — passed from send page, no re-fetch needed
-  amount: number,        // naira
+  accountName: string, // resolved name — passed from send page, no re-fetch needed
+  amount: number, // naira
   narration: string,
+  pin: string, // 4-digit transaction PIN
 ) {
   const data = await POST<{ merchantTxRef?: string; id?: string; status?: string }>(
     "/v1/transfers/send",
     {
-      bank_code:      bankCode,
+      bank_code: bankCode,
       account_number: accountNumber,
-      account_name:   accountName,
-      amount:         Math.round(amount * 100), // naira → kobo
-      narration:      narration || "Transfer",
+      account_name: accountName,
+      amount: Math.round(amount * 100), // naira → kobo
+      narration: narration || "Transfer",
+      pin: pin,
     },
   );
-  const bank = NG_BANKS.find((b) => b.code === bankCode);
+  // Return bank name from the API response or use a placeholder
   return {
     reference: data.merchantTxRef ?? data.id ?? `ZLA${Date.now()}`,
     recipient: accountName,
-    bank:      bank?.name,
+    bank: undefined, // Will be populated from the banks list in the UI
   };
 }
 
@@ -246,12 +275,17 @@ export async function sendMoney(
 // ─────────────────────────────────────────────
 
 export async function getKycStatus(): Promise<KycStatus> {
-  const data = await GET<{ tier: number; bvnVerified: boolean; idVerified: boolean; limits: { daily: number } }>("/v1/kyc/status");
+  const data = await GET<{
+    tier: number;
+    bvnVerified: boolean;
+    idVerified: boolean;
+    limits: { daily: number };
+  }>("/v1/kyc/status");
   return {
-    tier:        (data.tier as 1 | 2 | 3) ?? 1,
-    limits:      { daily: (data.limits?.daily ?? 5000000) / 100 }, // kobo → naira
+    tier: (data.tier as 1 | 2 | 3) ?? 1,
+    limits: { daily: (data.limits?.daily ?? 5000000) / 100 }, // kobo → naira
     bvnVerified: data.bvnVerified,
-    idVerified:  data.idVerified,
+    idVerified: data.idVerified,
   };
 }
 
@@ -267,13 +301,15 @@ export async function submitId(file: File) {
 
   const token = getToken();
   const res = await fetch(`${BASE}/v1/kyc/id-document`, {
-    method:  "POST",
+    method: "POST",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body:    form,
+    body: form,
   });
   if (!res.ok) {
     let msg = "ID submission failed";
-    try { msg = (await res.json()).detail ?? msg; } catch {}
+    try {
+      msg = (await res.json()).detail ?? msg;
+    } catch {}
     throw new Error(msg);
   }
   return { success: true as const, newTier: 3 as const };

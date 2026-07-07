@@ -1,4 +1,9 @@
-import type { ButtonHTMLAttributes, InputHTMLAttributes, SelectHTMLAttributes, ReactNode } from "react";
+import type {
+  ButtonHTMLAttributes,
+  InputHTMLAttributes,
+  SelectHTMLAttributes,
+  ReactNode,
+} from "react";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "outline" | "ghost";
@@ -25,7 +30,11 @@ export function Button({
   }[variant];
 
   return (
-    <button className={`${base} ${sizes} ${variants} ${className}`} disabled={disabled || loading} {...rest}>
+    <button
+      className={`${base} ${sizes} ${variants} ${className}`}
+      disabled={disabled || loading}
+      {...rest}
+    >
       {loading ? <Spinner /> : null}
       {children}
     </button>
@@ -36,7 +45,12 @@ export function Spinner({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg className={`animate-spin ${className}`} viewBox="0 0 24 24" fill="none">
       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
-      <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      <path
+        d="M22 12a10 10 0 0 1-10 10"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -83,7 +97,9 @@ export function Select({ label, className = "", id, children, ...rest }: SelectP
 }
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-lg border border-border bg-card p-5 ${className}`}>{children}</div>;
+  return (
+    <div className={`rounded-lg border border-border bg-card p-5 ${className}`}>{children}</div>
+  );
 }
 
 export function Divider() {

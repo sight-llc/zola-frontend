@@ -5,15 +5,44 @@ import { useAuth } from "@/lib/auth";
 
 type NavItem = { to: string; label: string; icon: ReactNode };
 
-const HomeIcon = <IconWrap><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" /></IconWrap>;
-const SendIcon = <IconWrap><path d="M4 20 20 4M20 4v10M20 4H10" /></IconWrap>;
-const ReceiveIcon = <IconWrap><path d="M20 4 4 20M4 20V10M4 20h10" /></IconWrap>;
-const ListIcon = <IconWrap><path d="M4 6h16M4 12h16M4 18h16" /></IconWrap>;
-const CogIcon = <IconWrap><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" /></IconWrap>;
+const HomeIcon = (
+  <IconWrap>
+    <path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
+  </IconWrap>
+);
+const SendIcon = (
+  <IconWrap>
+    <path d="M4 20 20 4M20 4v10M20 4H10" />
+  </IconWrap>
+);
+const ReceiveIcon = (
+  <IconWrap>
+    <path d="M20 4 4 20M4 20V10M4 20h10" />
+  </IconWrap>
+);
+const ListIcon = (
+  <IconWrap>
+    <path d="M4 6h16M4 12h16M4 18h16" />
+  </IconWrap>
+);
+const CogIcon = (
+  <IconWrap>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
+  </IconWrap>
+);
 
 function IconWrap({ children }: { children: ReactNode }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+    >
       {children}
     </svg>
   );
@@ -46,7 +75,6 @@ export function AppShell() {
       </div>
     );
   }
-
 
   return (
     <div className="min-h-screen bg-background text-foreground">

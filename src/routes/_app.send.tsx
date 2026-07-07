@@ -8,14 +8,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { NG_BANKS, formatNaira, getBalance, resolveAccount, sendMoney } from "@/lib/api";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { BankInfo, getBanks, formatNaira, getBalance, resolveAccount, sendMoney } from "@/lib/api";
 import { useToast } from "@/lib/toast";
 
 export const Route = createFileRoute("/_app/send")({
   component: SendPage,
 });
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5;
 
 function SendPage() {
   const [step, setStep] = useState<Step>(1);
@@ -25,13 +26,36 @@ function SendPage() {
   const [resolved, setResolved] = useState<{ name: string; bank: string } | null>(null);
   const [amount, setAmount] = useState("");
   const [narration, setNarration] = useState("");
+  const [pin, setPin] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
   const [balance, setBalance] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
+  const [banks, setBanks] = useState<BankInfo[]>([]);
+  const [banksLoading, setBanksLoading] = useState(true);
+  const [banksError, setBanksError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => { getBalance().then((b) => setBalance(b.balance)); }, []);
+  // Fetch banks on mount
+  useEffect(() => {
+    async function fetchBanks() {
+      setBanksLoading(true);
+      setBanksError(null);
+      try {
+        const fetchedBanks = await getBanks();
+        setBanks(fetchedBanks);
+      } catch (e) {
+        setBanksError(e instanceof Error ? e.message : "Failed to load banks");
+      } finally {
+        setBanksLoading(false);
+      }
+    }
+    fetchBanks();
+  }, []);
+
+  useEffect(() => {
+    getBalance().then((b) => setBalance(b.balance));
+  }, []);
 
   useEffect(() => {
     setResolved(null);
@@ -51,9 +75,16 @@ function SendPage() {
     if (!resolved) return;
     setSubmitting(true);
     try {
-      const res = await sendMoney(bankCode, accountNumber, resolved.name, amountNum, narration);
+      const res = await sendMoney(
+        bankCode,
+        accountNumber,
+        resolved.name,
+        amountNum,
+        narration,
+        pin,
+      );
       setReference(res.reference);
-      setStep(4);
+      setStep(5);
       toast("Transfer successful");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Transfer failed");
@@ -63,7 +94,28 @@ function SendPage() {
   }
 
   function reset() {
-    setStep(1); setAccountNumber(""); setResolved(null); setAmount(""); setNarration(""); setReference(null); setError(null);
+    setStep(1);
+    setAccountNumber("");
+    setResolved(null);
+    setAmount("");
+    setNarration("");
+    setPin("");
+    setReference(null);
+    setError(null);
+  }
+
+  // Retry fetching banks
+  async function retryFetchBanks() {
+    setBanksLoading(true);
+    setBanksError(null);
+    try {
+      const fetchedBanks = await getBanks();
+      setBanks(fetchedBanks);
+    } catch (e) {
+      setBanksError(e instanceof Error ? e.message : "Failed to load banks");
+    } finally {
+      setBanksLoading(false);
+    }
   }
 
   return (
@@ -80,22 +132,35 @@ function SendPage() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-muted-foreground">Recipient bank</label>
-              <Select value={bankCode} onValueChange={setBankCode}>
-                <SelectTrigger className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-none ring-offset-background hover:bg-surface focus:ring-2 focus:ring-ring focus:ring-offset-0 transition-colors [&_svg]:text-muted-foreground">
-                  <SelectValue placeholder="Choose a bank" />
-                </SelectTrigger>
-                <SelectContent className="rounded-md border border-border bg-background text-foreground shadow-lg">
-                  {NG_BANKS.map((b) => (
-                    <SelectItem
-                      key={b.code}
-                      value={b.code}
-                      className="rounded-sm px-2 py-2 text-sm text-foreground focus:bg-surface focus:text-foreground data-[state=checked]:bg-surface"
-                    >
-                      {b.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {banksLoading ? (
+                <div className="rounded-md border border-border bg-surface px-3 py-2 text-xs text-muted-foreground">
+                  Loading banks…
+                </div>
+              ) : banksError ? (
+                <div className="flex flex-col gap-2">
+                  <div className="text-xs text-danger">{banksError}</div>
+                  <Button variant="outline" onClick={retryFetchBanks}>
+                    Retry
+                  </Button>
+                </div>
+              ) : (
+                <Select value={bankCode} onValueChange={setBankCode}>
+                  <SelectTrigger className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-none ring-offset-background hover:bg-surface focus:ring-2 focus:ring-ring focus:ring-offset-0 transition-colors [&_svg]:text-muted-foreground">
+                    <SelectValue placeholder="Choose a bank" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-md border border-border bg-background text-foreground shadow-lg">
+                    {banks.map((b) => (
+                      <SelectItem
+                        key={b.bankCode}
+                        value={b.bankCode}
+                        className="rounded-sm px-2 py-2 text-sm text-foreground focus:bg-surface focus:text-foreground data-[state=checked]:bg-surface"
+                      >
+                        {b.bankName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <Input
               label="Account number"
@@ -106,13 +171,19 @@ function SendPage() {
               placeholder="10 digits"
               error={error ?? undefined}
             />
-            {resolving ? <div className="rounded-md border border-border bg-surface px-3 py-2 text-xs text-muted-foreground">Resolving…</div> : null}
+            {resolving ? (
+              <div className="rounded-md border border-border bg-surface px-3 py-2 text-xs text-muted-foreground">
+                Resolving…
+              </div>
+            ) : null}
             {resolved ? (
               <div className="rounded-md border border-border bg-surface px-3 py-2 text-xs font-medium text-foreground">
                 {resolved.name} · {resolved.bank}
               </div>
             ) : null}
-            <Button size="lg" disabled={!resolved} onClick={() => setStep(2)}>Continue</Button>
+            <Button size="lg" disabled={!resolved} onClick={() => setStep(2)}>
+              Continue
+            </Button>
           </div>
         </Card>
       ) : null}
@@ -139,11 +210,25 @@ function SendPage() {
               <div className="text-xs text-muted-foreground">Available: {formatNaira(balance)}</div>
             </div>
 
-            <Input label="Narration (optional)" placeholder="What's this for?" value={narration} onChange={(e) => setNarration(e.target.value)} />
+            <Input
+              label="Narration (optional)"
+              placeholder="What's this for?"
+              value={narration}
+              onChange={(e) => setNarration(e.target.value)}
+            />
 
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
-              <Button size="lg" className="flex-1" disabled={amountNum <= 0 || amountNum > balance} onClick={() => setStep(3)}>Review transfer</Button>
+              <Button variant="outline" onClick={() => setStep(1)}>
+                Back
+              </Button>
+              <Button
+                size="lg"
+                className="flex-1"
+                disabled={amountNum <= 0 || amountNum > balance}
+                onClick={() => setStep(3)}
+              >
+                Review transfer
+              </Button>
             </div>
           </div>
         </Card>
@@ -153,26 +238,93 @@ function SendPage() {
         <Card>
           <div className="flex flex-col gap-5">
             <div className="grid grid-cols-3 gap-y-3 text-sm">
-              <div className="text-muted-foreground">To</div><div className="col-span-2 font-medium text-foreground">{resolved.name}</div>
-              <div className="text-muted-foreground">Bank</div><div className="col-span-2 text-foreground">{resolved.bank}</div>
-              <div className="text-muted-foreground">Account</div><div className="col-span-2 tabular text-foreground">{accountNumber}</div>
-              <div className="text-muted-foreground">Amount</div><div className="col-span-2 tabular font-semibold text-foreground">{formatNaira(amountNum)}</div>
-              <div className="text-muted-foreground">Narration</div><div className="col-span-2 text-foreground">{narration || "—"}</div>
-              <div className="text-muted-foreground">Fee</div><div className="col-span-2 tabular text-foreground">₦ 0.00</div>
+              <div className="text-muted-foreground">To</div>
+              <div className="col-span-2 font-medium text-foreground">{resolved.name}</div>
+              <div className="text-muted-foreground">Bank</div>
+              <div className="col-span-2 text-foreground">{resolved.bank}</div>
+              <div className="text-muted-foreground">Account</div>
+              <div className="col-span-2 tabular text-foreground">{accountNumber}</div>
+              <div className="text-muted-foreground">Amount</div>
+              <div className="col-span-2 tabular font-semibold text-foreground">
+                {formatNaira(amountNum)}
+              </div>
+              <div className="text-muted-foreground">Narration</div>
+              <div className="col-span-2 text-foreground">{narration || "—"}</div>
+              <div className="text-muted-foreground">Fee</div>
+              <div className="col-span-2 tabular text-foreground">₦ 0.00</div>
             </div>
             {error ? <div className="text-xs text-danger">{error}</div> : null}
             <div className="flex items-center gap-3">
-              <button onClick={() => setStep(2)} className="text-sm text-muted-foreground hover:text-foreground">Back</button>
-              <Button size="lg" className="flex-1" loading={submitting} onClick={submit}>Confirm & Send</Button>
+              <button
+                onClick={() => setStep(2)}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                Back
+              </button>
+              <Button size="lg" className="flex-1" onClick={() => setStep(4)}>
+                Continue
+              </Button>
             </div>
           </div>
         </Card>
       ) : null}
 
-      {step === 4 && resolved && reference ? (
+      {step === 4 && resolved ? (
+        <Card>
+          <div className="flex flex-col gap-5">
+            <div className="text-sm text-muted-foreground">
+              Enter your 4-digit transaction PIN to confirm
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Transaction PIN</label>
+              <InputOTP
+                maxLength={4}
+                value={pin}
+                onChange={setPin}
+                className="flex items-center gap-2"
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            {error ? <div className="text-xs text-danger">{error}</div> : null}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setStep(3)}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                Back
+              </button>
+              <Button
+                size="lg"
+                className="flex-1"
+                loading={submitting}
+                disabled={pin.length !== 4}
+                onClick={submit}
+              >
+                Confirm & Send
+              </Button>
+            </div>
+          </div>
+        </Card>
+      ) : null}
+
+      {step === 5 && resolved && reference ? (
         <Card className="text-center">
           <div className="mx-auto mt-2 flex h-12 w-12 items-center justify-center rounded-full border border-border">
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M5 12l5 5L20 7" />
             </svg>
           </div>
@@ -181,7 +333,12 @@ function SendPage() {
           </div>
           <div className="mt-1 text-xs text-muted-foreground">Ref · {reference}</div>
           <div className="mt-6 flex items-center justify-center gap-3">
-            <Link to="/transactions" className="text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-2">View transaction</Link>
+            <Link
+              to="/transactions"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-2"
+            >
+              View transaction
+            </Link>
             <Button onClick={reset}>Send another</Button>
           </div>
         </Card>
@@ -191,7 +348,7 @@ function SendPage() {
 }
 
 function Stepper({ current }: { current: Step }) {
-  const labels = ["Recipient", "Amount", "Confirm", "Done"];
+  const labels = ["Recipient", "Amount", "Review", "PIN", "Done"];
   return (
     <div className="flex items-center gap-2">
       {labels.map((l, i) => {
@@ -200,7 +357,11 @@ function Stepper({ current }: { current: Step }) {
         return (
           <div key={l} className="flex flex-1 flex-col gap-1.5">
             <div className={`h-0.5 w-full ${active ? "bg-foreground" : "bg-border"}`} />
-            <div className={`text-[10px] uppercase tracking-widest ${active ? "text-foreground" : "text-muted-foreground"}`}>{l}</div>
+            <div
+              className={`text-[10px] uppercase tracking-widest ${active ? "text-foreground" : "text-muted-foreground"}`}
+            >
+              {l}
+            </div>
           </div>
         );
       })}
