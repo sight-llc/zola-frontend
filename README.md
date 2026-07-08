@@ -4,6 +4,8 @@
 
 A beautiful, responsive consumer wallet interface built with React 19, TypeScript, TanStack Router, and Tailwind CSS. Connects to the Zola backend to provide users with dedicated NUBAN accounts, instant transfers, and transaction management.
 
+🔗 **Live:** [zola-frontend.vercel.app](https://zola-frontend.vercel.app/)
+
 ---
 
 ## Features
