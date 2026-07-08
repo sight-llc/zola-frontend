@@ -257,7 +257,7 @@ export async function sendMoney(
       bank_code: bankCode,
       account_number: accountNumber,
       account_name: accountName,
-      amount: Math.round(amount * 100), // naira → kobo
+      amount: amount, // already in naira — endpoint expects naira
       narration: narration || "Transfer",
       pin: pin,
     },
