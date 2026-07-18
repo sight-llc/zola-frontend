@@ -12,6 +12,7 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/lib/toast";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Card } from "@/components/ui-kit";
 import { ZolaMark } from "@/components/ZolaLogo";
 
@@ -29,6 +30,7 @@ function greeting() {
 function HomePage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { unreadNotifications } = useNotifications();
   const [balance, setBalance] = useState<number | null>(null);
   const [account, setAccount] = useState<VirtualAccount | null>(null);
   const [txns, setTxns] = useState<Transaction[] | null>(null);
@@ -44,6 +46,13 @@ function HomePage() {
     getTransactions().then((t) => setTxns(t.slice(0, 6)));
     getKycStatus().then(setKyc);
   }, []);
+
+  useEffect(() => {
+    const hasPayment = unreadNotifications.some((n) => n.event_type === "PAYMENT.RECEIVED");
+    if (hasPayment) {
+      getBalance().then((b) => setBalance(b.balance));
+    }
+  }, [unreadNotifications]);
 
   function toggleBalance() {
     setBalanceHidden((prev) => {

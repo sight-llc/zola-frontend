@@ -322,5 +322,26 @@ export async function submitId(file: File) {
 export function formatNaira(amount: number, opts: { withSymbol?: boolean } = {}) {
   const { withSymbol = true } = opts;
   const n = amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return withSymbol ? `₦ ${n}` : n;
+  return withSymbol ? `\u20a6 ${n}` : n;
+}
+
+// ─────────────────────────────────────────────
+// Notifications
+// ─────────────────────────────────────────────
+
+export type ZolaNotification = {
+  id: string;
+  event_type: string;
+  description: string;
+  amount_display: string | null;
+  read: boolean;
+  created_at: string;
+};
+
+export async function getNotifications(): Promise<ZolaNotification[]> {
+  return GET("/v1/notifications");
+}
+
+export async function markNotificationsRead(ids: string[]): Promise<void> {
+  return POST("/v1/notifications/mark-read", { ids });
 }

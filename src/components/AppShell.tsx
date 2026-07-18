@@ -1,7 +1,9 @@
 import { Link, useRouterState, useNavigate, Outlet } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { ZolaLogo, ZolaMark } from "./ZolaLogo";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/lib/toast";
+import { useNotifications } from "@/hooks/useNotifications";
 
 type NavItem = { to: string; label: string; icon: ReactNode };
 
@@ -61,11 +63,26 @@ const MOBILE_NAV = NAV.slice(0, 4);
 export function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, ready, signOut } = useAuth();
+  const { toast } = useToast();
+  const { unreadCount, unreadNotifications, markRead } = useNotifications();
+  const seenIds = useRef<Set<string>>(new Set());
   const nav = useNavigate();
 
   useEffect(() => {
     if (ready && !user) nav({ to: "/auth" });
   }, [ready, user, nav]);
+
+  useEffect(() => {
+    const fresh = unreadNotifications.filter((n) => !seenIds.current.has(n.id));
+    if (fresh.length === 0) return;
+
+    fresh.forEach((n) => {
+      seenIds.current.add(n.id);
+      toast(n.description);
+    });
+
+    markRead(fresh.map((n) => n.id));
+  }, [unreadNotifications]);
 
   if (!ready || !user) {
     return (
@@ -94,6 +111,9 @@ export function AppShell() {
               >
                 {item.icon}
                 {item.label}
+                {item.label === "Transactions" && unreadCount > 0 ? (
+                  <span className="ml-auto flex h-2 w-2 rounded-full bg-red-500" />
+                ) : null}
               </Link>
             );
           })}
