@@ -6,6 +6,25 @@
 
 const BASE = (import.meta.env.VITE_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
+// Request timeout — prevents UI from hanging indefinitely
+const REQUEST_TIMEOUT_MS = 15000;
+
+// ─────────────────────────────────────────────
+// In-memory caches to avoid redundant API calls
+// ─────────────────────────────────────────────
+
+let banksCache: BankInfo[] | null = null;
+let banksCachePromise: Promise<BankInfo[]> | null = null;
+let transactionsCache: Transaction[] | null = null;
+let transactionsCachePromise: Promise<Transaction[]> | null = null;
+
+export function clearCaches() {
+  banksCache = null;
+  banksCachePromise = null;
+  transactionsCache = null;
+  transactionsCachePromise = null;
+}
+
 // ─────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────
@@ -72,6 +91,7 @@ export function signOut() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  clearCaches();
 }
 
 // ─────────────────────────────────────────────
@@ -84,21 +104,30 @@ async function req<T>(method: string, path: string, body?: unknown, auth = true)
     const token = getToken();
     if (token) headers["Authorization"] = `Bearer ${token}`;
   }
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) {
-    let msg = `Request failed (${res.status})`;
-    try {
-      const err = await res.json();
-      msg = err.detail ?? err.message ?? msg;
-    } catch {}
-    throw new Error(msg);
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      let msg = `Request failed (${res.status})`;
+      try {
+        const err = await res.json();
+        msg = err.detail ?? err.message ?? msg;
+      } catch {}
+      throw new Error(msg);
+    }
+    if (res.status === 204) return undefined as T;
+    return res.json();
+  } finally {
+    clearTimeout(timeout);
   }
-  if (res.status === 204) return undefined as T;
-  return res.json();
 }
 
 const GET = <T>(path: string) => req<T>("GET", path);
@@ -197,13 +226,34 @@ function mapTxn(raw: RawTxn): Transaction {
 }
 
 export async function getTransactions(): Promise<Transaction[]> {
-  const data = await GET<{ items?: RawTxn[] } | RawTxn[]>("/v1/wallet/transactions");
-  const items = Array.isArray(data) ? data : (data.items ?? []);
-  return items.map(mapTxn);
+  // Use cached data if available (stale-while-revalidate pattern)
+  if (transactionsCachePromise) {
+    // A fetch is already in-flight — return it (deduplication)
+    return transactionsCachePromise;
+  }
+
+  transactionsCachePromise = GET<{ items?: RawTxn[] } | RawTxn[]>("/v1/wallet/transactions")
+    .then((data) => {
+      const items = Array.isArray(data) ? data : (data.items ?? []);
+      const mapped = items.map(mapTxn);
+      transactionsCache = mapped;
+      return mapped;
+    })
+    .finally(() => {
+      transactionsCachePromise = null;
+    });
+
+  return transactionsCachePromise;
 }
 
 export async function getTransaction(id: string): Promise<Transaction | null> {
-  // No single-txn endpoint — fetch list and find by id
+  // Check cache first — avoids full re-fetch if we already have transactions
+  if (transactionsCache) {
+    const found = transactionsCache.find((t) => t.id === id);
+    if (found) return found;
+  }
+
+  // Otherwise fetch all and cache
   try {
     const all = await getTransactions();
     return all.find((t) => t.id === id) ?? null;
@@ -223,9 +273,21 @@ export type BankInfo = {
   logo?: string | null;
 };
 
-// Fetch banks from API - no fallback, must succeed
 export async function getBanks(): Promise<BankInfo[]> {
-  return GET<BankInfo[]>("/v1/transfers/banks");
+  // Use in-memory cache + deduplication to avoid redundant requests
+  if (banksCache) return banksCache;
+  if (banksCachePromise) return banksCachePromise;
+
+  banksCachePromise = GET<BankInfo[]>("/v1/transfers/banks")
+    .then((banks) => {
+      banksCache = banks;
+      return banks;
+    })
+    .finally(() => {
+      banksCachePromise = null;
+    });
+
+  return banksCachePromise;
 }
 
 export async function resolveAccount(bankCode: string, accountNumber: string) {
@@ -234,8 +296,9 @@ export async function resolveAccount(bankCode: string, accountNumber: string) {
     bank_code: bankCode,
     account_number: accountNumber,
   });
-  // Get bank name from the banks list - no fallback, must succeed
-  const banks = await getBanks();
+
+  // Use cached banks list — avoids redundant fetch every resolution
+  const banks = banksCache ?? await getBanks();
   const bank = banks.find((b) => b.bankCode === bankCode);
   return {
     accountName: data.accountName,
@@ -262,7 +325,6 @@ export async function sendMoney(
       pin: pin,
     },
   );
-  // Return bank name from the API response or use a placeholder
   return {
     reference: data.merchantTxRef ?? data.id ?? `ZLA${Date.now()}`,
     recipient: accountName,
@@ -300,19 +362,27 @@ export async function submitId(file: File) {
   form.append("file", file, file.name);
 
   const token = getToken();
-  const res = await fetch(`${BASE}/v1/kyc/id-document`, {
-    method: "POST",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: form,
-  });
-  if (!res.ok) {
-    let msg = "ID submission failed";
-    try {
-      msg = (await res.json()).detail ?? msg;
-    } catch {}
-    throw new Error(msg);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    const res = await fetch(`${BASE}/v1/kyc/id-document`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      let msg = "ID submission failed";
+      try {
+        msg = (await res.json()).detail ?? msg;
+      } catch {}
+      throw new Error(msg);
+    }
+    return { success: true as const, newTier: 3 as const };
+  } finally {
+    clearTimeout(timeout);
   }
-  return { success: true as const, newTier: 3 as const };
 }
 
 // ─────────────────────────────────────────────
@@ -322,7 +392,7 @@ export async function submitId(file: File) {
 export function formatNaira(amount: number, opts: { withSymbol?: boolean } = {}) {
   const { withSymbol = true } = opts;
   const n = amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return withSymbol ? `\u20a6 ${n}` : n;
+  return withSymbol ? `₦ ${n}` : n;
 }
 
 // ─────────────────────────────────────────────

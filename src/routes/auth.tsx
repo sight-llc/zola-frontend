@@ -1,10 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { Button, Input } from "@/components/ui-kit";
-import { ZolaLogo, ZolaMark } from "@/components/ZolaLogo";
 import { login, register } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/lib/toast";
+import { Icons } from "@/components/design-system/Icons";
+import { useCachedImage } from "@/hooks/use-cached-image";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -23,10 +23,14 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { setUser, user, ready } = useAuth();
   const { toast } = useToast();
   const nav = useNavigate();
+
+  // useCachedImage kept for future use, but currently no background images
+  // The old Unsplash URLs were returning 404 errors
 
   useEffect(() => {
     if (ready && user) nav({ to: "/home", replace: true });
@@ -60,139 +64,181 @@ function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2">
-      {/* LEFT — form */}
-      <div className="flex min-h-screen flex-col justify-between bg-background px-6 py-8 lg:px-14 lg:py-10">
-        <ZolaLogo />
+    <div className="flex min-h-dvh flex-col bg-[var(--bg-primary)] md:grid md:grid-cols-2">
+      {/* ─── LEFT: Form ─── */}
+      <div className="relative flex min-h-dvh flex-col bg-[var(--bg-secondary)] px-6 py-8 md:px-12 md:py-10">
+        {/* ─── Mobile background images (removed — old URLs were 404ing) ─── */}
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden select-none md:hidden" />
 
-        <div className="mx-auto flex w-full max-w-sm flex-col">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {mode === "login" ? "Sign in to Zola" : "Create your account"}
+        {/* Logo */}
+        <div className="relative z-10 flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-black">
+            <img src="/screenicon.png" alt="Zola" className="h-5 w-5 object-contain" />
+          </div>
+        </div>
+
+        <div className="relative z-10 mx-auto mt-28 flex w-full max-w-sm flex-col md:mt-40">
+          {/* Header */}
+          <h1 className="text-3xl font-bold tracking-tight">
+            {mode === "login" ? "Welcome back" : "Get started"}
           </h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">
             {mode === "login"
-              ? "Access your Nigerian wallet."
-              : "Get your dedicated NUBAN in minutes."}
+              ? "Sign in to your Zola wallet."
+              : "Create your account in minutes."}
           </p>
 
+          {/* Form */}
           <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-4">
             {mode === "register" ? (
               <>
-                <Input
-                  label="Full name"
-                  name="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Chisom Okafor"
-                  autoComplete="name"
-                />
-                <Input
-                  label="Phone number"
-                  name="phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="080 1234 5678"
-                  autoComplete="tel"
-                />
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-[var(--text-secondary)]">Full name</label>
+                  <input
+                    className="h-11 w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all hover:border-[var(--border-strong)] focus:border-[var(--border-focus)] focus:ring-2 focus:ring-[var(--border-focus)]"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Chisom Okafor"
+                    autoComplete="name"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-[var(--text-secondary)]">Phone number</label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="080 1234 5678"
+                    className="h-11 w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all hover:border-[var(--border-strong)] focus:border-[var(--border-focus)] focus:ring-2 focus:ring-[var(--border-focus)]"
+                    autoComplete="tel"
+                  />
+                </div>
               </>
             ) : null}
-            <Input
-              label="Email"
-              name="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@company.com"
-              autoComplete="email"
-            />
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-            />
 
-            {error ? <div className="text-xs text-danger">{error}</div> : null}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[var(--text-secondary)]">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@company.com"
+                className="h-11 w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all hover:border-[var(--border-strong)] focus:border-[var(--border-focus)] focus:ring-2 focus:ring-[var(--border-focus)]"
+                autoComplete="email"
+              />
+            </div>
 
-            <Button type="submit" loading={loading} size="lg" className="mt-2">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[var(--text-secondary)]">Password</label>
+              <div className="relative">
+                <input
+                  type={passwordVisible ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="h-11 w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] pr-10 pl-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all hover:border-[var(--border-strong)] focus:border-[var(--border-focus)] focus:ring-2 focus:ring-[var(--border-focus)]"
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                />
+                <button
+                  type="button"
+                  onClick={() => setPasswordVisible(!passwordVisible)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                  aria-label={passwordVisible ? "Hide password" : "Show password"}
+                  tabIndex={-1}
+                >
+                  {passwordVisible ? <Icons.EyeOff size={16} /> : <Icons.Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {error ? (
+              <div className="flex items-center gap-2 rounded-xl bg-[var(--error-bg)] px-4 py-3 text-xs text-[var(--error)]">
+                <Icons.AlertCircle size={14} />
+                {error}
+              </div>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-semibold text-[var(--accent-foreground)] transition-all hover:bg-[var(--accent-hover)] active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
+            >
+              {loading ? (
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
+                  <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                </svg>
+              ) : null}
               {mode === "login" ? "Sign in" : "Create account"}
-            </Button>
+            </button>
           </form>
 
-          <div className="mt-6 text-xs text-muted-foreground">
+          {/* Toggle mode */}
+          <div className="mt-6 text-center text-xs text-[var(--text-tertiary)]">
             {mode === "login" ? "Don't have an account? " : "Already have an account? "}
             <button
               onClick={() => {
                 setMode(mode === "login" ? "register" : "login");
                 setError(null);
               }}
-              className="font-medium text-foreground underline underline-offset-2"
+              className="font-medium text-[var(--text-primary)] underline underline-offset-2 hover:text-[var(--text-link)]"
             >
               {mode === "login" ? "Create one" : "Sign in"}
             </button>
           </div>
         </div>
 
-        <div className="text-xs text-muted-foreground">
+        {/* Footer */}
+        <div className="mt-auto pt-8 text-xs text-[var(--text-tertiary)]">
           © 2026 Zola. Built on Meroe infrastructure.
         </div>
       </div>
 
-      {/* RIGHT — brand canvas */}
-      <div className="relative hidden overflow-hidden bg-[#0A0A0A] lg:block">
-        {/* Global currency symbols — the only multi-currency surface in the app */}
-        <span className="pointer-events-none absolute top-[8%] left-[12%] text-[180px] font-bold text-white/[0.06] select-none">
-          ₦
-        </span>
-        <span className="pointer-events-none absolute top-[18%] right-[10%] text-[90px] font-semibold text-white/[0.10] select-none">
-          $
-        </span>
-        <span className="pointer-events-none absolute bottom-[14%] left-[18%] text-[120px] font-bold text-white/[0.08] select-none">
-          €
-        </span>
-        <span className="pointer-events-none absolute bottom-[22%] right-[16%] text-[60px] font-semibold text-white/[0.15] select-none">
-          £
-        </span>
-        <span className="pointer-events-none absolute top-[46%] left-[6%] text-[40px] font-medium text-white/[0.10] select-none">
-          ¥
-        </span>
-        <span className="pointer-events-none absolute top-[54%] right-[4%] text-[52px] font-medium text-white/[0.08] select-none">
-          ₹
-        </span>
-        <span className="pointer-events-none absolute top-[32%] left-[42%] text-[70px] font-semibold text-white/[0.07] select-none">
-          ₿
-        </span>
+      {/* ─── RIGHT: Brand canvas ─── */}
+      <div className="relative hidden overflow-hidden bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] md:block">
+        {/* Decorative currency symbols */}
+        <span className="pointer-events-none absolute -top-12 left-[8%] text-[220px] font-bold text-white/[0.04] select-none">₦</span>
+        <span className="pointer-events-none absolute top-[20%] right-[8%] text-[100px] font-semibold text-white/[0.06] select-none">$</span>
+        <span className="pointer-events-none absolute bottom-[10%] left-[15%] text-[140px] font-bold text-white/[0.05] select-none">€</span>
+        <span className="pointer-events-none absolute bottom-[25%] right-[12%] text-[70px] font-semibold text-white/[0.08] select-none">£</span>
 
-        <div className="relative z-10 flex h-full w-full flex-col items-center justify-center px-10">
-          <p className="mb-10 text-[28px] font-semibold leading-tight text-white text-center">
-            Banking built for you.
-          </p>
-
-          <div
-            className="relative w-[360px] rounded-[14px] border border-white/10 bg-[#141414] p-6 text-white"
+        <div className="relative z-10 flex h-full flex-col items-center justify-center px-12">
+          {/* Premium card mockup */}
+          <div className="w-[380px] rounded-2xl border border-white/10 bg-white/5 p-8 text-white shadow-2xl backdrop-blur-sm"
             style={{
-              transform: "perspective(1200px) rotateZ(-8deg) rotateX(6deg)",
-              boxShadow: "0 20px 80px rgba(255,255,255,0.06), 0 1px 0 rgba(255,255,255,0.04) inset",
+              transform: "perspective(1200px) rotateZ(-6deg) rotateX(4deg)",
+              boxShadow: "0 30px 80px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06) inset",
             }}
           >
-            <div className="flex items-start justify-between">
-              <ZolaMark className="h-5 w-5 text-white" />
-              <span className="text-[10px] uppercase tracking-widest text-white/40">Virtual</span>
+            <div className="flex items-center justify-between">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
+                <img src="/screenicon.png" alt="Zola" className="h-5 w-5 object-contain brightness-0 invert" />
+              </div>
+              <span className="rounded-md bg-white/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-white/60">
+                Virtual
+              </span>
             </div>
-            <div className="mt-10 font-mono text-[22px] font-semibold tabular tracking-wider text-white">
+            <div className="mt-10 font-mono text-2xl font-semibold tabular-nums tracking-widest text-white">
               4563 8745 1230 9876
             </div>
             <div className="mt-8 flex items-end justify-between">
-              <div className="text-[11px] uppercase tracking-wider text-white/50">Card Holder</div>
-              <div className="text-sm font-bold tracking-tight text-white">Zola</div>
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-white/40">Card Holder</div>
+                <div className="mt-1 text-sm font-bold tracking-tight">Zola</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] uppercase tracking-wider text-white/40">Expires</div>
+                <div className="mt-1 text-sm font-bold tabular-nums">12/28</div>
+              </div>
             </div>
           </div>
 
-          <p className="mt-14 text-sm text-white/50">Your money. Your rails.</p>
+          <div className="mt-16 text-center">
+            <h2 className="text-2xl font-bold text-white">Banking built for you.</h2>
+            <p className="mt-3 text-sm text-white/50 max-w-sm mx-auto">
+              Your money. Your rails. Dedicated NUBAN, instant transfers, no fees.
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -13,8 +13,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/lib/toast";
 import { useNotifications } from "@/hooks/useNotifications";
-import { Card } from "@/components/ui-kit";
-import { ZolaMark } from "@/components/ZolaLogo";
+import { Icons } from "@/components/design-system/Icons";
 
 export const Route = createFileRoute("/_app/home")({
   component: HomePage,
@@ -32,6 +31,7 @@ function HomePage() {
   const { toast } = useToast();
   const { unreadNotifications } = useNotifications();
   const [balance, setBalance] = useState<number | null>(null);
+  const [prevBalance, setPrevBalance] = useState<number | null>(null);
   const [account, setAccount] = useState<VirtualAccount | null>(null);
   const [txns, setTxns] = useState<Transaction[] | null>(null);
   const [kyc, setKyc] = useState<KycStatus | null>(null);
@@ -39,12 +39,24 @@ function HomePage() {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("zola.balanceHidden") === "1";
   });
+  const [balanceRevealed, setBalanceRevealed] = useState(!balanceHidden);
 
   useEffect(() => {
-    getBalance().then((b) => setBalance(b.balance));
-    getVirtualAccount().then(setAccount);
-    getTransactions().then((t) => setTxns(t.slice(0, 6)));
-    getKycStatus().then(setKyc);
+    getBalance()
+      .then((b) => {
+        setBalance(b.balance);
+        setPrevBalance(b.balance);
+      })
+      .catch(() => { /* silent — fallback UI shows skeleton */ });
+    getVirtualAccount()
+      .then(setAccount)
+      .catch(() => { /* silent */ });
+    getTransactions()
+      .then((t) => setTxns(t.slice(0, 5)))
+      .catch(() => { /* silent */ });
+    getKycStatus()
+      .then(setKyc)
+      .catch(() => { /* silent */ });
   }, []);
 
   useEffect(() => {
@@ -59,6 +71,10 @@ function HomePage() {
       const next = !prev;
       if (typeof window !== "undefined")
         localStorage.setItem("zola.balanceHidden", next ? "1" : "0");
+      if (!next) {
+        setBalanceRevealed(true);
+        setTimeout(() => setBalanceRevealed(false), 2000);
+      }
       return next;
     });
   }
@@ -70,101 +86,188 @@ function HomePage() {
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {greeting()}, {user?.name.split(" ")[0]}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">{today}</p>
+    <div className="flex flex-col gap-8 animate-stagger">
+      {/* ─── Header ─── */}
+      <header className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {greeting()}, {user?.name.split(" ")[0]}
+          </h1>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">{today}</p>
+        </div>
+        <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+          <Icons.Sparkles size={18} />
+        </button>
       </header>
 
-      {/* Balance card */}
-      <div className="rounded-lg border border-border bg-[#0A0A0A] p-6 text-white dark:bg-[#141414]">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            <div className="text-xs uppercase tracking-wider text-white/50">Available balance</div>
-            <button
-              onClick={toggleBalance}
-              aria-label={balanceHidden ? "Show balance" : "Hide balance"}
-              className="rounded-md p-1 text-white/50 hover:bg-white/5 hover:text-white/80 transition-colors"
-            >
-              {balanceHidden ? <EyeOffIcon /> : <EyeIcon />}
-            </button>
+      {/* ─── Balance Card ─── */}
+      <div className="relative overflow-hidden rounded-2xl bg-[var(--gradient-card)] p-6 text-white shadow-lg md:p-8">
+        {/* Decorative glow */}
+        <div className="pointer-events-none absolute -inset-40 bg-gradient-radial from-white/5 to-transparent" />
+
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium tracking-wider text-white/50 uppercase">
+                Available balance
+              </span>
+              <button
+                onClick={toggleBalance}
+                aria-label={balanceHidden ? "Show balance" : "Hide balance"}
+                className="rounded-lg p-1 text-white/40 hover:bg-white/10 hover:text-white/80 transition-all"
+              >
+                {balanceHidden ? <Icons.EyeOff size={14} /> : <Icons.Eye size={14} />}
+              </button>
+            </div>
+            <span className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-white/50">
+              Wallet
+            </span>
           </div>
-          <span className="rounded border border-white/15 px-2 py-0.5 text-[10px] uppercase tracking-widest text-white/60">
-            ZOLA
-          </span>
-        </div>
-        <div className="mt-3 text-4xl font-bold tabular tracking-tight">
-          {balance == null ? (
-            <span className="text-white/30">₦ ——,———.——</span>
-          ) : balanceHidden ? (
-            <span className="text-white/60">₦ ••••••••</span>
-          ) : (
-            formatNaira(balance)
-          )}
-        </div>
-        {account ? (
-          <div className="mt-6 flex items-center gap-3 text-sm text-white/70">
-            <span className="tabular">{account.accountNumber}</span>
-            <span className="text-white/40">·</span>
-            <span>{account.bankName}</span>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(account.accountNumber);
-                toast("Account number copied");
-              }}
-              aria-label="Copy account number"
-              className="ml-auto rounded-md border border-white/15 p-1.5 text-white/70 hover:bg-white/5 hover:text-white transition-colors"
-            >
-              <CopyIcon />
-            </button>
+
+          <div className="mt-4">
+            {balance == null ? (
+              <div className="h-12 w-48 rounded-lg bg-white/10 skeleton" />
+            ) : balanceHidden ? (
+              <div className="text-4xl font-bold tabular-nums tracking-tight text-white/40">
+                ₦ ••••••••
+              </div>
+            ) : (
+              <div
+                className="text-4xl font-bold tabular-nums tracking-tight text-white"
+                style={{
+                  animation: balanceRevealed ? "balanceReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both" : "none",
+                }}
+              >
+                {formatNaira(balance)}
+              </div>
+            )}
           </div>
-        ) : null}
+
+          {/* Virtual account details */}
+          {account ? (
+            <div className="mt-6 flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm">
+              <div className="flex items-center gap-2.5">
+                <Icons.Building size={14} className="text-white/50" />
+                <span className="text-white/70">{account.bankName}</span>
+              </div>
+              <span className="text-white/30">·</span>
+              <span className="tabular-nums font-medium text-white/90">{account.accountNumber}</span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(account.accountNumber);
+                  toast("Account number copied");
+                }}
+                className="ml-auto rounded-lg border border-white/10 bg-white/5 p-1.5 text-white/60 hover:bg-white/10 hover:text-white transition-all"
+                aria-label="Copy account number"
+              >
+                <Icons.Copy size={14} />
+              </button>
+            </div>
+          ) : null}
+        </div>
       </div>
 
-      {/* KYC banner */}
+      {/* ─── Quick Actions ─── */}
+      <div className="grid grid-cols-4 gap-2 md:gap-3">
+        <QuickAction
+          to="/send"
+          label="Send"
+          icon={<Icons.ArrowUp size={18} />}
+        />
+        <QuickAction
+          to="/receive"
+          label="Top Up"
+          icon={<Icons.ArrowDown size={18} />}
+        />
+        <QuickAction
+          to="/transactions"
+          label="History"
+          icon={<Icons.Clock size={18} />}
+        />
+        <QuickAction
+          label="Invite"
+          icon={<Icons.Gift size={18} />}
+          onClick={() => {
+            navigator.clipboard.writeText("Join me on Zola");
+            toast("Invite link copied");
+          }}
+        />
+      </div>
+
+      {/* ─── KYC Banner ─── */}
       {kyc && kyc.tier < 2 ? (
         <Link
           to="/kyc"
-          className="group flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-3 text-sm hover:bg-background transition-colors"
+          className="group relative overflow-hidden rounded-xl border border-[var(--warning-bg)] bg-[var(--warning-bg)] px-5 py-4 transition-all hover:brightness-95"
         >
-          <span className="text-foreground">Verify your identity to unlock higher limits</span>
-          <span className="text-muted-foreground group-hover:text-foreground">→</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--warning)]/10">
+                <Icons.Shield size={18} className="text-[var(--warning)]" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-[var(--warning)]">Verify your identity</div>
+                <div className="mt-0.5 text-xs text-[var(--warning)]/70">
+                  Unlock higher daily limits
+                </div>
+              </div>
+            </div>
+            <Icons.ChevronRight size={16} className="text-[var(--warning)]/40 group-hover:text-[var(--warning)] transition-colors" />
+          </div>
         </Link>
       ) : null}
 
-      {/* Quick actions */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <QuickAction to="/send" label="Send Money" icon={<ArrowIcon rotate={-45} />} />
-        <QuickAction to="/receive" label="Add Money" icon={<ArrowIcon rotate={135} />} />
-        <QuickAction to="/transactions" label="Transactions" icon={<ListSmall />} />
-        <QuickAction to="/settings" onClickCopy label="Invite" icon={<PlusSmall />} />
+      {/* ─── Quick Stats ─── */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-4">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--success-bg)]">
+            <Icons.TrendingUp size={16} className="text-[var(--success)]" />
+          </div>
+          <div className="mt-3 text-lg font-bold tabular-nums">
+            {txns ? txns.filter((t) => t.type === "credit").length : "—"}
+          </div>
+          <div className="mt-0.5 text-xs text-[var(--text-tertiary)]">Money in</div>
+        </div>
+        <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-4">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--error-bg)]">
+            <Icons.ArrowUp size={16} className="text-[var(--error)] rotate-45" />
+          </div>
+          <div className="mt-3 text-lg font-bold tabular-nums">
+            {txns ? txns.filter((t) => t.type === "debit").length : "—"}
+          </div>
+          <div className="mt-0.5 text-xs text-[var(--text-tertiary)]">Money out</div>
+        </div>
       </div>
 
-      {/* Recent transactions */}
+      {/* ─── Recent Transactions ─── */}
       <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold tracking-tight">Recent transactions</h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-sm font-semibold">Recent activity</h2>
           <Link
             to="/transactions"
-            className="text-xs font-medium text-muted-foreground hover:text-foreground"
+            className="text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
             View all
           </Link>
         </div>
-        <div className="flex flex-col">
+
+        <div className="flex flex-col gap-1">
           {txns == null ? (
             Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
           ) : txns.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              No transactions yet
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-6 py-12 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--bg-surface)]">
+                <Icons.Clock size={20} className="text-[var(--text-tertiary)]" />
+              </div>
+              <div className="text-sm text-[var(--text-tertiary)]">No activity yet</div>
+              <p className="text-xs text-[var(--text-tertiary)]/60 max-w-xs">
+                Your transactions will appear here once you send or receive money.
+              </p>
             </div>
           ) : (
             txns.map((t, i) => (
-              <div key={t.id}>
+              <div key={t.id} className="animate-in" style={{ animationDelay: `${i * 30}ms` }}>
                 <TxnRow t={t} />
-                {i < txns.length - 1 ? <div className="h-px bg-border" /> : null}
               </div>
             ))
           )}
@@ -178,37 +281,35 @@ function QuickAction({
   to,
   label,
   icon,
-  onClickCopy,
+  onClick,
 }: {
-  to: string;
+  to?: string;
   label: string;
   icon: React.ReactNode;
-  onClickCopy?: boolean;
+  onClick?: () => void;
 }) {
-  const { toast } = useToast();
-  const cls =
-    "flex flex-col items-start gap-3 rounded-lg border border-border bg-background p-4 text-left transition-colors hover:bg-surface";
+  const base =
+    "flex flex-col items-center gap-2 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-4 text-center transition-all duration-[var(--duration-fast)] hover:border-[var(--border-default)] hover:shadow-md active:scale-[0.97]";
+  const iconWrap =
+    "flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--bg-surface)] text-[var(--text-primary)]";
+
   const content = (
     <>
-      <span className="rounded-md border border-border p-1.5 text-foreground">{icon}</span>
-      <span className="text-sm font-medium text-foreground">{label}</span>
+      <span className={iconWrap}>{icon}</span>
+      <span className="text-[11px] font-medium text-[var(--text-secondary)]">{label}</span>
     </>
   );
-  if (onClickCopy) {
+
+  if (onClick) {
     return (
-      <button
-        className={cls}
-        onClick={() => {
-          navigator.clipboard.writeText("Join me on Zola: https://zola.app");
-          toast("Invite link copied");
-        }}
-      >
+      <button className={base} onClick={onClick}>
         {content}
       </button>
     );
   }
+
   return (
-    <Link to={to} className={cls}>
+    <Link to={to!} className={base}>
       {content}
     </Link>
   );
@@ -220,24 +321,34 @@ export function TxnRow({ t }: { t: Transaction }) {
     <Link
       to="/transactions/$id"
       params={{ id: t.id }}
-      className="flex items-center gap-4 py-3.5 rounded-md transition-colors hover:bg-surface -mx-2 px-2"
+      className="group flex items-center gap-4 rounded-xl px-3 py-3 transition-all hover:bg-[var(--bg-surface)] -mx-2"
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface text-xs font-semibold text-foreground">
-        {t.counterparty
-          .split(" ")
-          .map((w) => w[0])
-          .slice(0, 2)
-          .join("")}
+      <div
+        className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+          credit
+            ? "bg-[var(--success-bg)] text-[var(--success)]"
+            : "bg-[var(--error-bg)] text-[var(--error)]"
+        }`}
+      >
+        {credit ? (
+          <Icons.ArrowDown size={16} />
+        ) : (
+          <Icons.ArrowUp size={16} className="rotate-45" />
+        )}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium text-foreground">{t.counterparty}</div>
-        <div className="truncate text-xs text-muted-foreground">{t.narration}</div>
+        <div className="truncate text-sm font-medium">{t.counterparty}</div>
+        <div className="truncate text-xs text-[var(--text-tertiary)]">{t.narration}</div>
       </div>
       <div className="text-right">
-        <div className="tabular text-sm font-semibold text-foreground">
+        <div
+          className={`tabular-nums text-sm font-semibold ${
+            credit ? "text-[var(--success)]" : "text-[var(--text-primary)]"
+          }`}
+        >
           {credit ? "+" : "−"} {formatNaira(t.amount, { withSymbol: false })}
         </div>
-        <div className="text-[11px] text-muted-foreground">{relativeDate(t.date)}</div>
+        <div className="text-[11px] text-[var(--text-tertiary)]">{relativeDate(t.date)}</div>
       </div>
     </Link>
   );
@@ -257,109 +368,13 @@ export function relativeDate(iso: string) {
 
 function SkeletonRow() {
   return (
-    <div className="flex items-center gap-4 py-3.5 animate-pulse">
-      <div className="h-10 w-10 rounded-full bg-surface" />
+    <div className="flex items-center gap-4 rounded-xl px-3 py-3">
+      <div className="h-10 w-10 rounded-xl skeleton" />
       <div className="flex-1 space-y-2">
-        <div className="h-3 w-32 rounded bg-surface" />
-        <div className="h-2.5 w-48 rounded bg-surface" />
+        <div className="h-3 w-32 skeleton" />
+        <div className="h-2.5 w-48 skeleton" />
       </div>
-      <div className="h-4 w-16 rounded bg-surface" />
+      <div className="h-4 w-16 skeleton" />
     </div>
   );
 }
-
-function CopyIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="9" y="9" width="11" height="11" rx="2" />
-      <path d="M5 15V5a2 2 0 0 1 2-2h10" />
-    </svg>
-  );
-}
-function ArrowIcon({ rotate = 0 }: { rotate?: number }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ transform: `rotate(${rotate}deg)` }}
-    >
-      <path d="M5 12h14M13 5l7 7-7 7" />
-    </svg>
-  );
-}
-function ListSmall() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-    >
-      <path d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  );
-}
-function PlusSmall() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-    >
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
-function EyeIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-function EyeOffIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-6.5 0-10-7-10-7a19.6 19.6 0 0 1 4.22-5.06M9.9 4.24A10.94 10.94 0 0 1 12 4c6.5 0 10 7 10 7a19.62 19.62 0 0 1-3.17 4.19M1 1l22 22" />
-      <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
-    </svg>
-  );
-}
-
-// unused but kept to avoid tree-shake noise
-export { ZolaMark };
