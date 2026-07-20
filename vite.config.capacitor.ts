@@ -5,8 +5,9 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 
 export default defineConfig(({ mode }) => {
-  // Override API URL for Android: Android emulator reaches host via 10.0.2.2
-  process.env.VITE_API_URL = "http://10.0.2.2:8000";
+  // Use the live API — the .env file has VITE_API_URL=https://zola-backend.fastapicloud.dev/
+  // Android emulator users should ensure the device can reach the live API URL.
+  // For local dev on Android emulator with a local backend, set VITE_API_URL in .env.local.
 
   return {
     plugins: [

@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
-import { ZolaMark } from "@/components/ZolaLogo";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -15,9 +14,19 @@ function Index() {
     nav({ to: user ? "/home" : "/auth", replace: true });
   }, [user, ready, nav]);
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-3 text-muted-foreground">
-      <ZolaMark className="h-8 w-8 animate-pulse text-foreground" />
-      <span className="text-sm">Loading…</span>
+    <div className="flex min-h-dvh items-center justify-center bg-[var(--bg-primary)]">
+      <div className="flex items-center gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="h-2 w-2 rounded-full bg-[var(--text-tertiary)]"
+            style={{
+              animation: `bounce 1s ease-in-out infinite`,
+              animationDelay: `${i * 0.15}s`,
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }

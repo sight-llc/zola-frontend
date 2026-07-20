@@ -26,9 +26,24 @@ export const Icons = {
   Send: createIcon(<><path d="M4 20 20 4M20 4v10M20 4H10" /></>),
   Receive: createIcon(<><path d="M20 4 4 20M4 20V10M4 20h10" /></>),
   List: createIcon(<><path d="M4 6h16M4 12h16M4 18h16" /></>),
-  Settings: createIcon(<><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></>),
-  ArrowUp: createIcon(<><path d="M5 12h14M13 5l7 7-7 7"/></>),
-  ArrowDown: createIcon(<><path d="M19 12H5M11 5l-7 7 7 7"/></>),
+Settings: createIcon(
+  <>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+  </>
+),
+ ArrowUp: createIcon(
+  <>
+    <path d="M12 19V5" />
+    <path d="m5 12 7-7 7 7" />
+  </>
+),
+  ArrowDown: createIcon(
+  <>
+    <path d="M12 5v14" />
+    <path d="m19 12-7 7-7-7" />
+  </>
+),
   ChevronLeft: createIcon(<><path d="M15 18l-6-6 6-6"/></>),
   ChevronRight: createIcon(<><path d="M9 6l6 6-6 6"/></>),
   X: createIcon(<><path d="M18 6 6 18M6 6l12 12"/></>),
@@ -42,7 +57,9 @@ export const Icons = {
   Shield: createIcon(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>),
   Bank: createIcon(<><rect x="3" y="10" width="18" height="11" rx="1"/><path d="M2 10 12 2l10 8"/></>),
   Wallet: createIcon(<><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="17" cy="12" r="1.5"/><path d="M2 9h20"/></>),
-  TrendingUp: createIcon(<><path d="M23 6-13.5 16.5 8.25 11.25 1 18.5"/><path d="M17 6h6v6"/></>),
+  TrendingUp: createIcon(<>
+    <path d="M12 5v14M19 12l-7 7-7-7" />
+  </>),
   Zap: createIcon(<><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></>),
   Sparkles: createIcon(<><path d="M12 3v4M8 8l-3-3M18 8l3-3M6 16H2M22 16h-4M8 20l-2 2M16 20l2 2M12 17v4"/></>),
   MessageCircle: createIcon(<><path d="M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z"/><path d="M12 8v4M12 16h.01"/></>),
@@ -60,7 +77,12 @@ export const Icons = {
   Percent: createIcon(<><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></>),
   LogOut: createIcon(<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>),
   Menu: createIcon(<><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></>),
-  Sun: createIcon(<><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l1.41-1.41M4.93 19.07 6.34 17.66"/></>),
+ Sun: createIcon(
+  <>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.58 4.58l2.12 2.12M17.3 17.3l2.12 2.12M4.58 19.42l2.12-2.12M17.3 6.7l2.12-2.12" />
+  </>
+),
   Moon: createIcon(<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>),
   PiggyBank: createIcon(<><path d="M19 12V7H5v5a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4Z"/><path d="M21 12V7h-2l-1-3-3 1L13 5H5a3 3 0 0 0-3 3v4a4 4 0 0 0 4 4h5"/><circle cx="9" cy="10" r="1"/></>),
   ArrowRight: createIcon(<><path d="M5 12h14M13 5l7 7-7 7"/></>),

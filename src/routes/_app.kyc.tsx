@@ -95,7 +95,10 @@ function KycPage() {
       >
         <div className="grid grid-cols-2 gap-4 text-sm">
           <FieldReadonly label="Full name" value={user?.name ?? "—"} />
-          <FieldReadonly label="Email" value={user?.email ?? "—"} />
+          <FieldReadonly label="Email" value={
+                user?.email
+                  ? `${user.email.slice(0, 15)}...`
+                  : "—"} />
         </div>
       </TierBlock>
 

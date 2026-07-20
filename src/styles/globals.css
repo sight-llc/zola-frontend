@@ -29,17 +29,26 @@
     background-color: var(--bg-primary);
     color: var(--text-primary);
     font-family: var(--font-sans);
-    font-size: 16px;
+    font-size: 15px;
     line-height: var(--leading-normal);
     min-height: 100dvh;
     overflow-x: hidden;
+    transition: background-color var(--duration-normal) var(--ease-out),
+                color var(--duration-normal) var(--ease-out);
+  }
+
+  /* ─── Smooth transitions for theme changes ─── */
+  * {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: var(--duration-fast);
+    transition-timing-function: var(--ease-out);
   }
 
   /* ─── Focus ─── */
   *:focus-visible {
     outline: 2px solid var(--border-focus);
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: 4px;
   }
 
   /* ─── Selection ─── */
@@ -110,8 +119,8 @@
 
   /* ─── Scrollbar ─── */
   ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 5px;
+    height: 5px;
   }
 
   ::-webkit-scrollbar-track {
@@ -121,10 +130,20 @@
   ::-webkit-scrollbar-thumb {
     background: var(--border-default);
     border-radius: var(--radius-full);
+    transition: background var(--duration-fast) var(--ease-out);
   }
 
   ::-webkit-scrollbar-thumb:hover {
     background: var(--border-strong);
+  }
+
+  /* ─── Safe area for mobile ─── */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
   }
 }
 
@@ -140,7 +159,18 @@
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
@@ -151,7 +181,7 @@
 @keyframes fadeInScale {
   from {
     opacity: 0;
-    transform: scale(0.96);
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
@@ -178,9 +208,9 @@
 }
 
 @keyframes skeleton {
-  0% { opacity: 0.6; }
+  0% { opacity: 0.5; }
   50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  100% { opacity: 0.5; }
 }
 
 @keyframes pulse {
@@ -196,12 +226,12 @@
   0% {
     opacity: 0;
     filter: blur(4px);
-    transform: translateY(4px);
+    transform: translateY(4px) scale(0.98);
   }
   100% {
     opacity: 1;
     filter: blur(0);
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -214,14 +244,25 @@
   }
 }
 
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-8px); opacity: 1; }
+}
+
 /* ═══════════════════════════════════════════════════
    Utility Classes
    ═══════════════════════════════════════════════════ */
 
 .glass {
   background: var(--bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
 }
 
 .surface-card {
@@ -245,7 +286,11 @@
 }
 
 .animate-in {
-  animation: fadeInUp 0.4s var(--ease-out) both;
+  animation: fadeInUp 0.45s var(--ease-out) both;
+}
+
+.animate-in-down {
+  animation: fadeInDown 0.35s var(--ease-out) both;
 }
 
 .animate-in-scale {
@@ -253,17 +298,17 @@
 }
 
 .animate-stagger > * {
-  animation: fadeInUp 0.4s var(--ease-out) both;
+  animation: fadeInUp 0.45s var(--ease-out) both;
 }
 
 .animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
-.animate-stagger > *:nth-child(2) { animation-delay: 40ms; }
-.animate-stagger > *:nth-child(3) { animation-delay: 80ms; }
-.animate-stagger > *:nth-child(4) { animation-delay: 120ms; }
-.animate-stagger > *:nth-child(5) { animation-delay: 160ms; }
-.animate-stagger > *:nth-child(6) { animation-delay: 200ms; }
-.animate-stagger > *:nth-child(7) { animation-delay: 240ms; }
-.animate-stagger > *:nth-child(8) { animation-delay: 280ms; }
+.animate-stagger > *:nth-child(2) { animation-delay: 50ms; }
+.animate-stagger > *:nth-child(3) { animation-delay: 100ms; }
+.animate-stagger > *:nth-child(4) { animation-delay: 150ms; }
+.animate-stagger > *:nth-child(5) { animation-delay: 200ms; }
+.animate-stagger > *:nth-child(6) { animation-delay: 250ms; }
+.animate-stagger > *:nth-child(7) { animation-delay: 300ms; }
+.animate-stagger > *:nth-child(8) { animation-delay: 350ms; }
 
 .skeleton {
   background: var(--bg-surface);

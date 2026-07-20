@@ -247,12 +247,27 @@ function SendPage() {
       {step === 2 && resolved && (
         <div className="animate-in-scale">
           <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-6">
-            <div className="flex items-center gap-3 rounded-xl bg-[var(--bg-surface)] px-4 py-3 text-sm mb-6">
-              <Icons.User size={16} className="text-[var(--text-tertiary)]" />
-              <span className="text-[var(--text-secondary)]">To</span>
-              <span className="font-medium text-[var(--text-primary)]">{resolved.name}</span>
-              <span className="text-[var(--text-tertiary)]">·</span>
-              <span className="text-[var(--text-secondary)]">{resolved.bank}</span>
+            <div className="flex min-w-0 items-center gap-3 rounded-xl bg-[var(--bg-surface)] px-4 py-3 text-sm mb-6">
+              <Icons.User
+                size={16}
+                className="shrink-0 text-[var(--text-tertiary)]"
+              />
+
+              <span className="shrink-0 text-[var(--text-secondary)]">
+                To
+              </span>
+
+              <span className="min-w-0 truncate font-medium text-[var(--text-primary)]">
+                {resolved.name}
+              </span>
+
+              <span className="shrink-0 text-[var(--text-tertiary)]">
+                ·
+              </span>
+
+              <span className="min-w-0 truncate text-[var(--text-secondary)]">
+                {resolved.bank}
+              </span>
             </div>
 
             <div className="flex flex-col items-center gap-2 pb-4">

@@ -13,15 +13,15 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-[var(--accent)] text-[var(--accent-foreground)] hover:bg-[var(--accent-hover)] active:scale-[0.98]",
+    "bg-[var(--accent)] text-[var(--accent-foreground)] hover:bg-[var(--accent-hover)] active:scale-[0.97] shadow-[var(--shadow-button)]",
   secondary:
-    "bg-[var(--bg-surface)] text-[var(--text-primary)] hover:bg-[var(--border-default)] active:scale-[0.98]",
+    "bg-[var(--bg-surface)] text-[var(--text-primary)] hover:bg-[var(--border-default)] active:scale-[0.97] border border-[var(--border-subtle)]",
   outline:
-    "border border-[var(--border-default)] text-[var(--text-primary)] hover:bg-[var(--bg-surface)] active:scale-[0.98]",
+    "border border-[var(--border-default)] text-[var(--text-primary)] hover:bg-[var(--bg-surface)] active:scale-[0.97]",
   ghost:
-    "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]",
+    "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] active:scale-[0.97]",
   danger:
-    "bg-[var(--error)] text-white hover:opacity-90 active:scale-[0.98]",
+    "bg-[var(--error)] text-white hover:opacity-90 active:scale-[0.97] shadow-[var(--shadow-button)]",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -63,7 +63,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading ? (
           <svg
-            className="h-4 w-4 animate-spin"
+            className="h-4 w-4 animate-spin shrink-0"
             viewBox="0 0 24 24"
             fill="none"
           >
@@ -85,7 +85,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ) : icon ? (
           <span className="shrink-0">{icon}</span>
         ) : null}
-        {children}
+        {children && <span className="truncate">{children}</span>}
       </button>
     );
   },

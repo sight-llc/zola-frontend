@@ -20,7 +20,7 @@ function SettingsPage() {
   useEffect(() => {
     getKycStatus()
       .then(setKyc)
-      .catch(() => { }); 
+      .catch(() => { });
   }, []);
 
   return (
@@ -48,7 +48,14 @@ function SettingsPage() {
           </div>
           <div className="grid grid-cols-2 gap-4 pt-4">
             <Field label="Full name" value={user?.name ?? "—"} />
-            <Field label="Email" value={user?.email ?? "—"} />
+            <Field
+              label="Email"
+              value={
+                user?.email
+                  ? `${user.email.slice(0, 20)}...`
+                  : "—"
+              }
+            />
           </div>
         </div>
       </section>

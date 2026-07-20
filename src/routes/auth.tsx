@@ -29,8 +29,16 @@ function AuthPage() {
   const { toast } = useToast();
   const nav = useNavigate();
 
-  // useCachedImage kept for future use, but currently no background images
-  // The old Unsplash URLs were returning 404 errors
+  // Cached image URLs for offline resilience and visual flair
+  const img1 = useCachedImage(
+    "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=400&fit=crop&crop=face&q=80",
+  );
+  const img2 = useCachedImage(
+    "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=400&h=400&fit=crop&crop=face&q=80",
+  );
+  const img3 = useCachedImage(
+    "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=300&h=300&fit=crop&crop=face&q=80",
+  );
 
   useEffect(() => {
     if (ready && user) nav({ to: "/home", replace: true });
@@ -67,8 +75,39 @@ function AuthPage() {
     <div className="flex min-h-dvh flex-col bg-[var(--bg-primary)] md:grid md:grid-cols-2">
       {/* ─── LEFT: Form ─── */}
       <div className="relative flex min-h-dvh flex-col bg-[var(--bg-secondary)] px-6 py-8 md:px-12 md:py-10">
-        {/* ─── Mobile background images (removed — old URLs were 404ing) ─── */}
-        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden select-none md:hidden" />
+        {/* ─── Mobile background images ─── */}
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden select-none md:hidden">
+          <img
+            src={img1}
+            alt=""
+            className="pointer-events-none absolute -right-10 -top-4 h-32 w-32 rotate-12 rounded-2xl object-cover opacity-10 select-none grayscale"
+          />
+          <img
+            src={img2}
+            alt=""
+            className="pointer-events-none absolute -bottom-6 -left-6 h-28 w-28 -rotate-6 rounded-2xl object-cover opacity-10 select-none grayscale"
+          />
+          <img
+            src={img3}
+            alt=""
+            className="pointer-events-none absolute bottom-[18%] right-[8%] h-20 w-20 rounded-xl object-cover opacity-10 select-none grayscale"
+          />
+          <img
+            src={img1}
+            alt=""
+            className="pointer-events-none absolute left-[12%] top-[12%] h-20 w-20 rotate-45 rounded-xl object-cover opacity-8 select-none grayscale"
+          />
+          <img
+            src={img2}
+            alt=""
+            className="pointer-events-none absolute right-[15%] top-[30%] h-16 w-16 -rotate-12 rounded-xl object-cover opacity-8 select-none grayscale"
+          />
+          <img
+            src={img3}
+            alt=""
+            className="pointer-events-none absolute left-[5%] bottom-[35%] h-14 w-14 rotate-[30deg] rounded-lg object-cover opacity-8 select-none grayscale"
+          />
+        </div>
 
         {/* Logo */}
         <div className="relative z-10 flex items-center gap-2.5">
@@ -196,6 +235,26 @@ function AuthPage() {
 
       {/* ─── RIGHT: Brand canvas ─── */}
       <div className="relative hidden overflow-hidden bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] md:block">
+        {/* Images */}
+        <img
+          src={img1}
+          alt=""
+          className="pointer-events-none absolute -right-16 -top-8 h-72 w-72 rotate-12 rounded-3xl object-cover opacity-30 select-none grayscale"
+          loading="lazy"
+        />
+        <img
+          src={img2}
+          alt=""
+          className="pointer-events-none absolute -bottom-12 -left-12 h-64 w-64 -rotate-6 rounded-3xl object-cover opacity-25 select-none grayscale"
+          loading="lazy"
+        />
+        <img
+          src={img3}
+          alt=""
+          className="pointer-events-none absolute bottom-[30%] right-[10%] h-40 w-40 rounded-2xl object-cover opacity-20 select-none grayscale"
+          loading="lazy"
+        />
+
         {/* Decorative currency symbols */}
         <span className="pointer-events-none absolute -top-12 left-[8%] text-[220px] font-bold text-white/[0.04] select-none">₦</span>
         <span className="pointer-events-none absolute top-[20%] right-[8%] text-[100px] font-semibold text-white/[0.06] select-none">$</span>
