@@ -112,7 +112,7 @@ function AuthPage() {
         {/* Logo */}
         <div className="relative z-10 flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-black">
-            <img src="/screenicon.png" alt="Zola" className="h-5 w-5 object-contain" />
+            <img src="/authicon.png" alt="Zola" className="h-5 w-5 object-contain" />
           </div>
         </div>
 
@@ -262,7 +262,6 @@ function AuthPage() {
         <span className="pointer-events-none absolute bottom-[25%] right-[12%] text-[70px] font-semibold text-white/[0.08] select-none">£</span>
 
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-12">
-          {/* Premium card mockup */}
           <div className="w-[380px] rounded-2xl border border-white/10 bg-white/5 p-8 text-white shadow-2xl backdrop-blur-sm"
             style={{
               transform: "perspective(1200px) rotateZ(-6deg) rotateX(4deg)",
@@ -271,7 +270,7 @@ function AuthPage() {
           >
             <div className="flex items-center justify-between">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
-                <img src="/screenicon.png" alt="Zola" className="h-5 w-5 object-contain brightness-0 invert" />
+                <img src="/authicon.png" alt="Zola" className="h-5 w-5 object-contain brightness-0 invert" />
               </div>
               <span className="rounded-md bg-white/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-white/60">
                 Virtual

@@ -94,6 +94,20 @@ export function signOut() {
   clearCaches();
 }
 
+/**
+ * Called when the backend returns 401 (token expired/invalid).
+ * Clears local session and redirects to the auth page.
+ * Works on both web and mobile (Capacitor) since both support
+ * localStorage and window.location navigation.
+ */
+export function handleUnauthorized() {
+  signOut();
+  // Avoid redirect loops — only redirect if we're not already on /auth
+  if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
+    window.location.href = "/auth";
+  }
+}
+
 // ─────────────────────────────────────────────
 // HTTP helpers
 // ─────────────────────────────────────────────
@@ -116,6 +130,10 @@ async function req<T>(method: string, path: string, body?: unknown, auth = true)
       signal: controller.signal,
     });
     if (!res.ok) {
+      // Token expired or invalid — force logout
+      if (res.status === 401 && auth) {
+        handleUnauthorized();
+      }
       let msg = `Request failed (${res.status})`;
       try {
         const err = await res.json();
@@ -373,6 +391,10 @@ export async function submitId(file: File) {
       signal: controller.signal,
     });
     if (!res.ok) {
+      // Token expired or invalid — force logout (auth is implied for this endpoint)
+      if (res.status === 401) {
+        handleUnauthorized();
+      }
       let msg = "ID submission failed";
       try {
         msg = (await res.json()).detail ?? msg;
