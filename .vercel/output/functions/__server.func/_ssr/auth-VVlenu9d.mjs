@@ -6,7 +6,7 @@ import { n as useAuth } from "./auth-BMM4cY4N.mjs";
 import { n as useToast } from "./toast-D-Okk_IC.mjs";
 import { t as Icons } from "./Icons-Nrs4ZB_z.mjs";
 import { _ as useNavigate } from "../_libs/@tanstack/react-router+[...].mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/auth-BLg3b8bl.js
+//#region node_modules/.nitro/vite/services/ssr/assets/auth-VVlenu9d.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 var CACHE_NAME = "zola-auth-images";
@@ -152,7 +152,7 @@ function AuthPage() {
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 						className: "flex h-8 w-8 items-center justify-center rounded-xl bg-black",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
-							src: "/screenicon.png",
+							src: "/authicon.png",
 							alt: "Zola",
 							className: "h-5 w-5 object-contain"
 						})
@@ -335,7 +335,7 @@ function AuthPage() {
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 									className: "flex h-8 w-8 items-center justify-center rounded-lg bg-white/10",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
-										src: "/screenicon.png",
+										src: "/authicon.png",
 										alt: "Zola",
 										className: "h-5 w-5 object-contain brightness-0 invert"
 									})

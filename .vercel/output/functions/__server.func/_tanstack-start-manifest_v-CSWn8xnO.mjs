@@ -1,4 +1,4 @@
-//#region node_modules/.nitro/vite/services/ssr/assets/_tanstack-start-manifest_v-7_Qb3_kd.js
+//#region node_modules/.nitro/vite/services/ssr/assets/_tanstack-start-manifest_v-CSWn8xnO.js
 var tsrStartManifest = () => ({ routes: {
 	__root__: {
 		filePath: "/Users/mac/Documents/zola-frontend/src/routes/__root.tsx",
@@ -8,7 +8,7 @@ var tsrStartManifest = () => ({ routes: {
 			"/auth"
 		],
 		preloads: [
-			"/assets/index-ngTBkVuN.js",
+			"/assets/index-CZYtz7ex.js",
 			"/assets/jsx-runtime-bzQ4Vb5N.js",
 			"/assets/link-BjIXvYZR.js",
 			"/assets/useStore-DWhJx06P.js",
@@ -18,13 +18,13 @@ var tsrStartManifest = () => ({ routes: {
 		scripts: [{ attrs: {
 			type: "module",
 			async: !0,
-			src: "/assets/index-ngTBkVuN.js"
+			src: "/assets/index-CZYtz7ex.js"
 		} }]
 	},
 	"/": {
 		filePath: "/Users/mac/Documents/zola-frontend/src/routes/index.tsx",
 		children: void 0,
-		preloads: ["/assets/routes-zcX7FYAW.js"]
+		preloads: ["/assets/routes-BiXakI8r.js"]
 	},
 	"/_app": {
 		filePath: "/Users/mac/Documents/zola-frontend/src/routes/_app.tsx",
@@ -36,56 +36,56 @@ var tsrStartManifest = () => ({ routes: {
 			"/_app/settings",
 			"/_app/transactions"
 		],
-		preloads: ["/assets/_app-_6QAYrbj.js", "/assets/useNotifications-BZl01Acu.js"]
+		preloads: ["/assets/_app-BcfPQ-xq.js", "/assets/useNotifications-D7JUUwPa.js"]
 	},
 	"/auth": {
 		filePath: "/Users/mac/Documents/zola-frontend/src/routes/auth.tsx",
 		children: void 0,
-		preloads: ["/assets/auth-CJkT6cG5.js"]
+		preloads: ["/assets/auth-J-e32PrQ.js"]
 	},
 	"/_app/home": {
 		filePath: "/Users/mac/Documents/zola-frontend/src/routes/_app.home.tsx",
 		children: void 0,
-		preloads: ["/assets/_app.home-B8jzxgzY.js"]
+		preloads: ["/assets/_app.home-oVuHOSq2.js"]
 	},
 	"/_app/kyc": {
 		filePath: "/Users/mac/Documents/zola-frontend/src/routes/_app.kyc.tsx",
 		children: void 0,
-		preloads: ["/assets/_app.kyc-CaNP36uc.js"]
+		preloads: ["/assets/_app.kyc-Ws1POJsC.js"]
 	},
 	"/_app/receive": {
 		filePath: "/Users/mac/Documents/zola-frontend/src/routes/_app.receive.tsx",
 		children: void 0,
-		preloads: ["/assets/_app.receive-C2Gjt0Pv.js"]
+		preloads: ["/assets/_app.receive-B6mWD7HX.js"]
 	},
 	"/_app/send": {
 		filePath: "/Users/mac/Documents/zola-frontend/src/routes/_app.send.tsx",
 		children: void 0,
-		preloads: ["/assets/_app.send-BGJspzKO.js", "/assets/input-otp-Cvdx14Px.js"]
+		preloads: ["/assets/_app.send-BUr9JjBi.js", "/assets/input-otp-Cvdx14Px.js"]
 	},
 	"/_app/settings": {
 		filePath: "/Users/mac/Documents/zola-frontend/src/routes/_app.settings.tsx",
 		children: void 0,
-		preloads: ["/assets/_app.settings-Dj9YLTa_.js", "/assets/input-otp-Cvdx14Px.js"]
+		preloads: ["/assets/_app.settings-DLFFM1M7.js", "/assets/input-otp-Cvdx14Px.js"]
 	},
 	"/_app/transactions": {
 		filePath: "/Users/mac/Documents/zola-frontend/src/routes/_app.transactions.tsx",
 		children: ["/_app/transactions/$id", "/_app/transactions/"],
-		preloads: ["/assets/_app.transactions-DjO05aNN.js"]
+		preloads: ["/assets/_app.transactions-DfX8yrTb.js"]
 	},
 	"/_app/transactions/$id": {
 		filePath: "/Users/mac/Documents/zola-frontend/src/routes/_app.transactions.$id.tsx",
 		children: void 0,
 		preloads: [
-			"/assets/_app.transactions._id-CnRf1AxB.js",
-			"/assets/_app.transactions._id-DJYAkXzH.js",
-			"/assets/_app.transactions._id-Ot2KD1UD.js"
+			"/assets/_app.transactions._id-BcIEfFCt.js",
+			"/assets/_app.transactions._id-DUyzEVKg.js",
+			"/assets/_app.transactions._id-Dx8nX7W_.js"
 		]
 	},
 	"/_app/transactions/": {
 		filePath: "/Users/mac/Documents/zola-frontend/src/routes/_app.transactions.index.tsx",
 		children: void 0,
-		preloads: ["/assets/_app.transactions.index-CF5hNkoJ.js"]
+		preloads: ["/assets/_app.transactions.index-BM4eQRXg.js"]
 	}
 } });
 //#endregion

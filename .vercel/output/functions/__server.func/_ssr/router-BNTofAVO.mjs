@@ -8,7 +8,7 @@ import { n as QueryClientProvider } from "../_libs/tanstack__react-query.mjs";
 import { c as HeadContent, d as createRouter, f as Outlet, h as createRootRouteWithContext, m as createFileRoute, p as lazyRouteComponent, s as Scripts, v as useRouter } from "../_libs/@tanstack/react-router+[...].mjs";
 import { t as Route$10 } from "../_app.transactions._id-BKK6cAyB.mjs";
 import { t as Route$11 } from "../_app.home-Dfpsg_WT.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/router-COxqgYJB.js
+//#region node_modules/.nitro/vite/services/ssr/assets/router-BNTofAVO.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 var styles_default = "/assets/styles-pjapgTFE.css";
@@ -159,7 +159,7 @@ function RootComponent() {
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AuthProvider, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToastProvider, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Outlet, {}) }) })
 	});
 }
-var $$splitComponentImporter$8 = () => import("./auth-BLg3b8bl.mjs");
+var $$splitComponentImporter$8 = () => import("./auth-VVlenu9d.mjs");
 var Route$8 = createFileRoute("/auth")({
 	head: () => ({ meta: [{ title: "Sign in — Zola" }, {
 		name: "description",
