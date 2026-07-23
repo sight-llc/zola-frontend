@@ -31,3 +31,5 @@ dist-capacitor
 *.njsproj
 *.sln
 *.sw?
+
+.vercel/ 
